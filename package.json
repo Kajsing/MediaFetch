@@ -1,0 +1,24 @@
+{
+  "name": "mediafetch",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test extension/tests/*.test.ts",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "test:browser": "node scripts/browser-smoke.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/chrome": "0.3.0",
+    "@types/node": "26.6.2",
+    "esbuild": "0.28.2",
+    "linkedom": "0.18.13",
+    "typescript": "7.0.2"
+  }
+}

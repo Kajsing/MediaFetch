@@ -1,0 +1,43 @@
+# JavaScript/TypeScript dependencies and generated output.
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Python environments, bytecode, and tooling caches.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local credentials and private signing material.
+.env
+.env.*
+!.env.example
+!.env.*.example
+/secrets/
+
+# Local runtime state, generated artifacts, and downloaded media.
+/.local/
+/artifacts/
+/VideoDownload/
+.mediafetch-partials/
+*.part
+*.ytdl
+*.crdownload
+*.log
+
+# Machine-specific workspace files. Keep .logs/*.md implementation records.
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
+.DS_Store
