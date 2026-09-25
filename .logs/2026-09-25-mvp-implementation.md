@@ -24,3 +24,9 @@ Documentation now includes installation, troubleshooting, dependencies, measured
 Outstanding: live website controls in normal Chrome (test browser hit Reddit humanity protection and X HTTP failure), subjective listening and broader live multi-video coverage. User agreed to perform the normal-Chrome check. Keep the goal active; do not claim complete acceptance yet.
 
 Final storage review added a regression for a stored destination replaced with a junction. Recovery/deletion now validates the stored path without resolving through the replacement. All 32 native tests pass. This final helper update awaits the end of the user's live Chrome test; source and installed helper are explicitly distinguished until then.
+
+## Live X layout correction
+
+The user confirmed Reddit's inline control and supplied a screenshot of an incorrectly stretched X control. Moved the X control from the article's flex children into the content column after its own native action row. Enforced a compact 32px button and wait for a recognized anchor. Updated the Chrome fixture to reproduce a horizontal article layout; checks at 320px and 640px pass. `pnpm check` and the content-script browser smoke passed; the fixture screenshot was inspected. Updated build is ready to reload.
+
+The installer refused the final native guard update because the user's helper connection was active. No process was stopped or active installation overwritten. User action is needed to release that connection after testing; this is an operational lock, not a new permission requirement.

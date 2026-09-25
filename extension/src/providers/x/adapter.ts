@@ -1,6 +1,15 @@
 import { canonical } from '../../shared/providers.ts';
 import type { Candidate } from '../../shared/contracts.ts';
 export const X_POSTS = 'article[data-testid="tweet"], article';
+export function xControlAnchor(post: Element): Element | null {
+  // X's article can be a horizontal flex container. Attach inside its content
+  // column after the native action row, never as another article-level column.
+  return [...post.querySelectorAll('[role="group"]')].find(group =>
+    group.closest(X_POSTS) === post
+    && !group.closest('[data-testid="quoteTweet"], [data-mediafetch-quote]')
+    && !!group.querySelector('[data-testid="reply"], [data-testid="retweet"], [data-testid="like"], [data-testid="unlike"]'),
+  ) ?? null;
+}
 export function xCandidate(target: Element, pageUrl: string): Candidate | null {
   const post = target.closest(X_POSTS);
   if (!post) return null;

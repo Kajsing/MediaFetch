@@ -27,7 +27,8 @@ try {
   const page = await context.newPage();
   const style = '<style>article,shreddit-post{display:block;padding:15px;border:1px solid #ccc;margin:10px}video{display:block;width:100px;height:40px}</style>';
   const reddit = `${style}<shreddit-post permalink="/comments/abc123/a/"><video id="first"></video></shreddit-post><shreddit-post permalink="/comments/def456/b/"><video id="second"></video></shreddit-post>`;
-  const x = `${style}<article><a href="/author/status/111"><time>Today</time></a><video id="outer"></video><div data-testid="quoteTweet"><a href="/quoted/status/222"><time>Yesterday</time></a><video id="inner"></video></div></article><article><a href="/neighbor/status/333"><time>Today</time></a><video id="neighbor"></video></article>`;
+  const actions = '<div role="group" class="actions"><button data-testid="reply">Reply</button><button data-testid="retweet">Repost</button><button data-testid="like">Like</button></div>';
+  const x = `${style}<style>body{background:#000;color:#eee;font:14px system-ui;margin:0}article{display:flex;flex-direction:row;align-items:stretch;width:540px;max-width:calc(100vw - 24px);box-sizing:border-box;margin:12px;padding:12px;gap:12px}.content{display:flex;flex-direction:column;flex:1;min-width:0}.avatar{flex:0 0 32px;background:#25423d;border-radius:50%;height:32px}video{width:100%;height:150px;background:#112b24;margin:12px 0}.actions{display:flex;justify-content:space-between;border-top:1px solid #333;padding:10px 0}</style><article><div class="avatar"></div><div class="content"><a href="/author/status/111"><time>Today</time></a><p>Public video fixture</p><video id="outer"></video><div data-testid="quoteTweet"><a href="/quoted/status/222"><time>Yesterday</time></a><video id="inner"></video></div>${actions}</div></article><article><div class="avatar"></div><div class="content"><a href="/neighbor/status/333"><time>Today</time></a><video id="neighbor"></video>${actions}</div></article>`;
   await context.route('**/*', route => {
     const url = new URL(route.request().url());
     if (route.request().resourceType() === 'document' && ['www.reddit.com', 'x.com'].includes(url.hostname)) return route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Controlled MediaFetch fixture</title>' + (url.hostname === 'x.com' ? x : reddit) });
@@ -59,6 +60,19 @@ try {
   checks.push('Recycled Reddit nodes replace their identity without duplicate controls');
   await page.goto('https://x.com/home');
   await waitControls(2);
+  for (const width of [640, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    const layout = await page.locator('article').first().evaluate(post => {
+      const host = post.querySelector('.mediafetch-control');
+      const actions = post.querySelector('.actions');
+      const bounds = host.getBoundingClientRect();
+      return { height: bounds.height, width: bounds.width, belowActions: bounds.top >= actions.getBoundingClientRect().bottom, inContent: host.parentElement.classList.contains('content'), fits: post.scrollWidth <= post.clientWidth };
+    });
+    assert.ok(layout.height <= 34 && layout.width < 200 && layout.belowActions && layout.inContent && layout.fits, JSON.stringify(layout));
+  }
+  await page.setViewportSize({ width: 640, height: 800 });
+  await page.screenshot({ path: path.join(root, 'artifacts/x-control-fixture.png'), fullPage: true });
+  checks.push('X control stays compact below the action row at 320px and 640px widths');
   assert.match((await selected('#outer')).url, /\/111$/);
   assert.match((await selected('#inner')).url, /\/222$/);
   assert.match((await selected('#neighbor')).url, /\/333$/);

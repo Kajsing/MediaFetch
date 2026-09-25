@@ -4,7 +4,7 @@ Last updated: 2026-09-25
 
 ## Current state
 
-Version 0.1.0 is a runnable MVP candidate. M0-M3 are complete. Reddit and X extraction, real Windows/Chrome Native Messaging, output playback, Stop, Continue, Retry, Stop and delete, browser restart recovery, and fixture-based content controls have passed. M4-M5 live website entry-point acceptance remains open because the isolated browser encountered Reddit's humanity check and X's HTTP response failure. The user is checking those entry points in normal Chrome. M6 documentation and automated evidence are recorded below; this is not yet an unconditional final acceptance claim.
+Version 0.1.0 is a runnable MVP candidate. M0-M3 are complete. Reddit and X extraction, real Windows/Chrome Native Messaging, output playback, Stop, Continue, Retry, Stop and delete, browser restart recovery, and fixture-based content controls have passed. The user confirmed Reddit controls appear correctly in normal Chrome and reported an X layout problem. That problem is fixed in the rebuilt extension and awaits live recheck. M6 documentation and automated evidence are recorded below; this is not yet an unconditional final acceptance claim.
 
 ## Confirmed user decisions
 
@@ -127,6 +127,8 @@ No change was made to product direction, licensing, required cloud dependencies,
 
 ### Remaining work and continuation
 
-The user has agreed to test the built extension in normal Chrome. Confirm helper connection, inline placement and the selected post/video on both provided sites, plus an actual context-menu action and a short human playback/listening check. If live markup differs from the fixtures, capture a minimal sanitized structure and fix the relevant provider adapter before final acceptance. Broader live multi-video examples remain useful additional coverage.
+The user confirmed the Reddit button appears correctly. Their X screenshot revealed that appending the control directly to the article created a stretched flex column. The X adapter now locates the post's own native action row and mounts the compact control after that row, inside the content column. When that anchor is unavailable it waits for a DOM update instead of changing the article layout. The rebuilt extension passed `pnpm check` and the Chrome content smoke, including 320px/640px width checks and visual inspection. Reddit placement remains unchanged. No helper change is required for this visual fix.
+
+Confirm the rebuilt X control in normal Chrome, helper connection, the selected post/video, an actual context-menu action and a short human playback/listening check. Broader live multi-video examples remain useful additional coverage. The final native storage guard still needs installation: the installer correctly refused to overwrite the helper while the user's connection was active. The user has been asked to disable the extension after finishing their download test, then report back so installation can finish.
 
 It is safe to continue with documentation or isolated fixture work. Avoid reinstalling or taking the shared native-host journal while the user's Chrome test is running. The MVP goal remains active until the outstanding acceptance result is incorporated; no completion is inferred from the user's agreement to try it.

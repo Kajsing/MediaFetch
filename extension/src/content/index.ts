@@ -1,7 +1,7 @@
 import { providerFor } from '../shared/providers.ts';
 import { DEFAULT_SETTINGS, type Candidate, type Settings } from '../shared/contracts.ts';
 import { REDDIT_POSTS, redditCandidate } from '../providers/reddit/adapter.ts';
-import { X_POSTS, xCandidate } from '../providers/x/adapter.ts';
+import { X_POSTS, xCandidate, xControlAnchor } from '../providers/x/adapter.ts';
 
 let settings: Settings = DEFAULT_SETTINGS;
 let contextTarget: Element | null = null;
@@ -36,14 +36,24 @@ function scan(scope: ParentNode) {
   for (const post of posts) {
     const found = candidate(post);
     const old = hosts.get(post);
+    const anchor = provider === 'x' ? xControlAnchor(post) : null;
+    if (provider === 'x' && !anchor) {
+      if (old) { old.host.remove(); hosts.delete(post); }
+      continue; // Wait for a recognized action row rather than changing X's layout.
+    }
     if (old && (old.identity !== found?.url || !old.host.isConnected)) { old.host.remove(); hosts.delete(post); }
-    if (!found || hosts.has(post)) continue;
+    if (!found) continue;
+    const existing = hosts.get(post);
+    if (existing) {
+      if (anchor && anchor.nextElementSibling !== existing.host) anchor.after(existing.host);
+      continue;
+    }
     if (!post.querySelector('video, shreddit-player, [data-testid="videoPlayer"], [data-testid="videoComponent"], [data-click-id="media"]') && post.getAttribute('post-type') !== 'video') continue;
     const host = document.createElement('span');
     host.className = 'mediafetch-control';
     const shadow = host.attachShadow({ mode: 'closed' });
     const style = document.createElement('style');
-    style.textContent = ':host{display:inline-flex;margin:6px 10px}button{font:600 12px system-ui;color:#d3fff2;background:#173c36;border:1px solid #47887b;border-radius:20px;padding:6px 12px;cursor:pointer}button:hover{background:#24574c}button:focus-visible{outline:2px solid #51e3b0;outline-offset:2px}button:disabled{opacity:.7;cursor:wait}';
+    style.textContent = `:host{display:inline-flex;flex:0 0 auto;align-self:flex-start;align-items:center;width:max-content;max-width:100%;height:auto;margin:${provider === 'x' ? '8px 0 4px' : '6px 10px'}}button{box-sizing:border-box;height:32px;white-space:nowrap;line-height:18px;font:600 12px system-ui;color:#d3fff2;background:#173c36;border:1px solid #47887b;border-radius:20px;padding:6px 12px;cursor:pointer}button:hover{background:#24574c}button:focus-visible{outline:2px solid #51e3b0;outline-offset:2px}button:disabled{opacity:.7;cursor:wait}`;
     const button = document.createElement('button'); button.type = 'button';
     button.textContent = '↓ Save video'; button.title = 'Download this post with MediaFetch';
     button.addEventListener('click', async event => {
@@ -59,7 +69,8 @@ function scan(scope: ParentNode) {
       finally { button.disabled = false; }
     });
     shadow.append(style, button); hosts.set(post, { host, identity: found.url });
-    post.append(host);
+    if (anchor) anchor.after(host);
+    else post.append(host);
   }
 }
 const pending = new Set<Element>();
