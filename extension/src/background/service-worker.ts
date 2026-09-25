@@ -1,6 +1,7 @@
 import { DEFAULT_SETTINGS, PROTOCOL, isRecord, parseSettings, parseSnapshot, quality, jobId, type AppState, type Candidate, type Snapshot } from '../shared/contracts.ts';
 import { PAGE_PATTERNS, canonical, providerFor, requireCandidate } from '../shared/providers.ts';
 import { NativeHost } from './native-host.ts';
+import { removeAllHistory } from './history.ts';
 
 const state: AppState = { settings: DEFAULT_SETTINGS, snapshot: null, helper: 'missing', helperError: '', notice: '', candidate: null };
 const loaded = chrome.storage.local.get(['settings', 'snapshot', 'notice']).then(data => {
@@ -13,6 +14,7 @@ let handshake: Promise<void> | null = null;
 let connected = false;
 let retryAfter = 0;
 let writes = Promise.resolve();
+let clearingHistory: ReturnType<typeof removeAllHistory> | null = null;
 const native = new NativeHost(snapshot => {
   if (snapshot.revision < sessionRevision) return;
   sessionRevision = snapshot.revision; state.snapshot = snapshot;
@@ -75,6 +77,10 @@ async function handle(message: unknown, sender: chrome.runtime.MessageSender) {
       await ensureHost();
       return native.request(String(message.action), { jobId: jobId(message.jobId), ...(message.mediaIndex ? { mediaIndex: message.mediaIndex } : {}) });
     }
+    case 'removeAll':
+      await ensureHost();
+      clearingHistory ??= removeAllHistory((action, fields) => native.request(action, fields)).finally(() => { clearingHistory = null; });
+      return clearingHistory;
     case 'saveSettings':
       state.settings = parseSettings(message.settings);
       await chrome.storage.local.set({ settings: state.settings });

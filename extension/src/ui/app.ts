@@ -44,10 +44,29 @@ function init() {
     const shelf = el('section', 'shelf');
     const shelfHeader = el('div', 'section-heading'); shelfHeader.append(el('h2', '', page === 'popup' ? 'Recent downloads' : 'Downloads'));
     if (page === 'popup') shelfHeader.append(nav('downloads.html', 'View all ↗'));
+    else {
+      const clear = el('button', 'text-button', 'Remove all'); clear.id = 'remove-all'; clear.type = 'button'; clear.disabled = true;
+      clear.title = 'Remove inactive entries without partial files. Saved videos are kept.';
+      clear.setAttribute('aria-describedby', 'remove-all-hint');
+      clear.addEventListener('click', async () => {
+        if (pendingAction) return;
+        pendingAction = true; clear.disabled = true; clear.textContent = 'Removing…';
+        try {
+          const result = await request('removeAll') as { removed: number; failed: number; kept: number };
+          const message = `Removed ${result.removed} ${result.removed === 1 ? 'entry' : 'entries'}. Saved videos were kept.`;
+          status(result.failed ? `${message} Some entries could not be removed; try again.` : result.kept ? `${message} Active downloads and retained partial files stay in the list.` : message, result.failed > 0);
+        } catch (error) { status((error as Error).message, true); }
+        finally { pendingAction = false; clear.textContent = 'Remove all'; await refresh(); }
+      });
+      shelfHeader.append(clear);
+    }
     shelf.append(shelfHeader);
+    if (page === 'downloads') {
+      const hint = el('p', 'hint', 'Saved videos are kept. Active downloads and retained partial files stay in the list.'); hint.id = 'remove-all-hint'; shelf.append(hint);
+    }
     const jobs = el('div'); jobs.id = 'jobs'; shelf.append(jobs); root.append(shelf);
   }
-  const footer = el('footer', 'footer'); footer.append(el('span', '', 'LOCAL BY DESIGN'), el('span', '', 'MediaFetch 0.1')); root.append(footer);
+  const footer = el('footer', 'footer'); footer.append(el('span', '', 'LOCAL BY DESIGN'), el('span', '', `MediaFetch ${chrome.runtime.getManifest().version}`)); root.append(footer);
 }
 function qualitySelect(id: string) {
   const select = el('select'); select.id = id; select.name = 'quality';
@@ -167,6 +186,8 @@ async function refresh() {
     }
     const jobs = document.querySelector('#jobs');
     const list = latest.snapshot?.jobs ?? [];
+    const clear = document.querySelector<HTMLButtonElement>('#remove-all');
+    if (clear) clear.disabled = pendingAction || latest.helper !== 'ready' || !list.some(job => actionsFor(job).includes('forget'));
     const signature = JSON.stringify([list, latest.helper]);
     const active = document.activeElement as HTMLElement | null;
     const editingMedia = active?.tagName === 'SELECT' && jobs?.contains(active);

@@ -124,6 +124,18 @@ class JobTests(unittest.TestCase):
         self.assertTrue(Path(path).is_file())
         self.assertEqual(self.job(job_id)["state"], "completed")
 
+    def test_forgetting_completed_history_preserves_the_published_video(self):
+        job_id = self.add("101")
+        saved = Path(self.wait(job_id, {"completed"})["path"])
+        # Completion is published before staging cleanup. Wait for the attempt to exit.
+        deadline = time.monotonic() + 3
+        while job_id in self.scheduler.running and time.monotonic() < deadline:
+            time.sleep(0.01)
+        original = saved.read_bytes()
+        self.scheduler.action("forget", {"jobId": job_id})
+        self.assertEqual(self.scheduler.snapshot()["jobs"], [])
+        self.assertEqual(saved.read_bytes(), original)
+
     def test_changed_resume_identity_fails_without_overwriting_partials(self):
         job_id = self.add("102")
         self.wait(job_id, {"downloading"})

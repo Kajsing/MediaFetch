@@ -77,6 +77,22 @@ try {
   assert.match((await selected('#inner')).url, /\/222$/);
   assert.match((await selected('#neighbor')).url, /\/333$/);
   checks.push('X quoted video context is distinct from the outer and neighboring post');
+  await page.evaluate(() => {
+    const content = document.querySelectorAll('.content')[1];
+    const video = content.querySelector('video');
+    const player = document.createElement('div'); player.dataset.testid = 'videoPlayer';
+    video.replaceWith(player); player.append(video);
+    const badge = document.createElement('span'); badge.id = 'late-gif-label'; badge.textContent = 'Video'; player.append(badge);
+  });
+  await page.waitForTimeout(400);
+  await waitControls(2);
+  await page.evaluate(() => { document.querySelector('#late-gif-label').firstChild.textContent = 'GIF'; });
+  await waitControls(1);
+  assert.equal(await selected('#neighbor'), null);
+  checks.push('A late GIF badge removes an existing button and rejects video-context targeting');
+  await page.evaluate(() => { document.querySelector('#late-gif-label').firstChild.textContent = 'Video'; });
+  await waitControls(2);
+  checks.push('A recycled GIF player restores the button when it becomes an ordinary video');
   await page.evaluate(() => { history.pushState({}, '', '/author/status/111'); document.querySelector('article').append(document.createElement('span')); });
   await page.waitForTimeout(400);
   await waitControls(2);

@@ -1,7 +1,7 @@
 import { providerFor } from '../shared/providers.ts';
 import { DEFAULT_SETTINGS, type Candidate, type Settings } from '../shared/contracts.ts';
 import { REDDIT_POSTS, redditCandidate } from '../providers/reddit/adapter.ts';
-import { X_POSTS, xCandidate, xControlAnchor } from '../providers/x/adapter.ts';
+import { X_POSTS, xCandidate, xControlAnchor, xHasDownloadableVideo } from '../providers/x/adapter.ts';
 
 let settings: Settings = DEFAULT_SETTINGS;
 let contextTarget: Element | null = null;
@@ -36,6 +36,10 @@ function scan(scope: ParentNode) {
   for (const post of posts) {
     const found = candidate(post);
     const old = hosts.get(post);
+    if (provider === 'x' && !xHasDownloadableVideo(post)) {
+      if (old) { old.host.remove(); hosts.delete(post); }
+      continue;
+    }
     const anchor = provider === 'x' ? xControlAnchor(post) : null;
     if (provider === 'x' && !anchor) {
       if (old) { old.host.remove(); hosts.delete(post); }
@@ -59,6 +63,7 @@ function scan(scope: ParentNode) {
     button.addEventListener('click', async event => {
       event.preventDefault(); event.stopPropagation();
       const current = candidate(post);
+      if (provider === 'x' && !xHasDownloadableVideo(post)) { host.remove(); hosts.delete(post); return; }
       if (!current || current.url !== hosts.get(post)?.identity) { button.textContent = 'Open post first'; return; }
       button.disabled = true; button.textContent = 'Adding…';
       try {
@@ -77,8 +82,9 @@ const pending = new Set<Element>();
 let timer: ReturnType<typeof setTimeout> | null = null;
 const observer = new MutationObserver(records => {
   for (const record of records) {
-    if (record.target instanceof Element && !record.target.closest('.mediafetch-control')) {
-      const post = record.target.closest(REDDIT_POSTS + ',' + X_POSTS);
+    const changed = record.target instanceof Element ? record.target : record.target.parentElement;
+    if (changed && !changed.closest('.mediafetch-control')) {
+      const post = changed.closest(REDDIT_POSTS + ',' + X_POSTS);
       if (post) pending.add(post);
     }
     for (const node of record.addedNodes) if (node instanceof Element && !node.matches('.mediafetch-control')) pending.add(node);
@@ -88,4 +94,4 @@ const observer = new MutationObserver(records => {
     for (const node of nodes) if (node.isConnected) scan(node);
   }, 250);
 });
-void refreshSettings().then(() => { scan(document); observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['href', 'permalink', 'data-permalink', 'post-type'] }); });
+void refreshSettings().then(() => { scan(document); observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'permalink', 'data-permalink', 'post-type', 'aria-label'] }); });

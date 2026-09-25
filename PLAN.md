@@ -50,6 +50,7 @@ Persist the canonical post URL, job ID, attempt ID, provider/content identity, q
 - **Stop and delete:** stop the job and its entire owned process tree, wait for exit, then delete only its unfinished staging artifacts. Retain a `Cancelled` entry so the outcome is visible and retry remains available.
 - **Delete partial files:** use the same job-scoped cleanup procedure for inactive jobs. After successful cleanup, mark the job `Cancelled` and retain Retry.
 - **Remove from list:** remove a terminal entry without deleting a completed video. Jobs with retained partial files must be cleaned up explicitly first so removing an entry cannot orphan those files.
+- **Remove all:** explicitly remove all currently inactive list entries without partial files. Keep saved videos, active/queued jobs, and entries with recovery data. Use the same native ownership checks as individual removal; never turn this into bulk file deletion.
 
 Retries and continuations are user-triggered and respect the shared two-job limit. Bound transient retries within an attempt; do not run an indefinite background retry loop.
 

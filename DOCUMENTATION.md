@@ -4,6 +4,8 @@ Last updated: 2026-09-25
 
 ## Current state
 
+Extension **0.1.1** is built with the requested **Remove all** list control and GIF-aware X inline detection. It uses the existing installed helper **0.1.0** without changing its protocol or files. The patch passed 14 extension tests, 33 native tests, and isolated Chrome content/history checks. The user's actual history was not cleared during testing. Reload the extension and affected pages to activate the patch; the exact live GIF example still needs that refreshed-page observation.
+
 Version 0.1.0 is the completed initial MVP. Reddit and X extraction, real Windows/Chrome Native Messaging, output playback, Stop, Continue, Retry, Stop and delete, browser restart recovery, and fixture-based content controls passed. In normal Chrome the user confirmed Reddit's button, reported the X layout issue, and then confirmed the corrected X button plus download and playback with sound. The final helper storage guard is installed and verified. M0-M6 are complete for these supported public workflows; the evidence and limits below do not imply universal provider or format compatibility.
 
 ## Confirmed user decisions
@@ -132,3 +134,19 @@ The user confirmed the Reddit button appears correctly. Their X screenshot revea
 The user enabled the rebuilt extension, reloaded X, and explicitly confirmed that the button, downloading and playback with sound work. Together with the earlier Reddit placement confirmation, automated native/browser checks and both public media downloads, this closes the initial MVP acceptance. The final native storage guard is installed. The installer first refused the active connection; after the user disabled the extension, update and verification succeeded.
 
 The actual OS context-menu gesture, broader live quoted/feed/multi-video examples, redirected known-folder machines, and physical full-disk/ACL cases remain coverage limits rather than passed live checks. Their supported boundaries and automated evidence are listed above. No active implementation blocker remains for the initial MVP. Future provider changes or newly reported defects can be handled within the same architecture; direct-engine enablement and MCP/ChatGPT integration remain separate future work. Do not interrupt the user's running Chrome to start more tests.
+
+## Post-MVP patch 0.1.1 — history and GIF controls
+
+User request: add Remove all to the list and avoid the video button on X GIFs, illustrated with the site's shared video-player wrapper and a visible GIF label.
+
+Implemented:
+
+- Added Remove all to the full list, with visible file-preservation guidance, disabled/working states and result feedback. The trusted service worker requests a fresh native snapshot, captures eligible inactive jobs, and uses existing individual `forget` requests. The helper rechecks live state and real partial files for each request. Concurrent batch calls share one operation; individual refusals remain visible. No delete, stop, file removal or unrequested history clearing occurs.
+- X checks GIF labels inside each player instead of interpreting every video wrapper as ordinary video. Text elsewhere in the post does not count as a GIF label; ordinary looping videos remain eligible. Late GIF labels remove an existing button, recycled players can regain it, and a GIF video context does not yield a download candidate. Quoted GIFs do not become the outer post's video. URL-based downloading remains governed by the existing extractor; this patch is a page-control filter, not a general GIF export feature.
+- Updated the extension/package version to 0.1.1 and the UI footer to show the manifest version. Helper 0.1.0 and protocol 1 remain compatible, so the user's active native installation was not touched.
+
+Changed files: `extension/src/background/history.ts`, service-worker routing, X adapter, content script, list UI, extension manifest/package version, extension tests, native forget-preservation test, browser smoke scripts, README/PLAN/status and implementation log.
+
+Validation: `pnpm check` passed (14 tests, typecheck, build); `scripts/test-native.ps1` passed (33 tests, including actual saved-file preservation after forgetting history). `content-smoke.mjs` passed real Chrome controlled-fixture checks including late GIF labels and X layout. `history-smoke.mjs` passed actual UI/service-worker routing with an explicitly isolated native-protocol double: only eligible entries disappeared, active/retained jobs stayed, Remove all disabled when nothing remained eligible, and state survived page reload. The list screenshot was visually inspected. No live provider download or user's history deletion was required for these changes.
+
+Assumptions: Remove all means clear removable history, preserving the original recovery/file-ownership contract. GIF suppression uses the GIF marker evidenced by the user's screenshot; a future unmarked layout could require another adapter adjustment. No architecture/security/licensing change or helper update was needed. The patch is ready to reload; normal-Chrome verification of the exact GIF example is not claimed as already performed.
