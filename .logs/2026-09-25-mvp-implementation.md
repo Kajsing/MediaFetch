@@ -32,3 +32,7 @@ The user confirmed Reddit's inline control and supplied a screenshot of an incor
 The installer refused the final native guard update because the user's helper connection was active. No process was stopped or active installation overwritten. User action is needed to release that connection after testing; this is an operational lock, not a new permission requirement.
 
 The user then disabled the extension. Installed the final helper guard successfully, passed the real framed handshake, and checked the installed storage module's SHA-256 against the tested source. Asked the user to enable the extension, reload X, and confirm corrected placement plus downloading/playback with sound.
+
+## MVP acceptance closed
+
+The user explicitly confirmed the corrected X button and downloading/playback with sound in normal Chrome. Reddit placement had already been confirmed. Recorded M0-M6 completion for the initial public-video MVP while retaining the acceptance matrix's coverage limits. The final state has 8 extension tests and 32 native tests passing, real browser/content/live/recovery/media evidence, a verified installed helper, current documentation and local commits on `codex/mvp`. No remote push or future integration was performed.

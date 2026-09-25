@@ -2,7 +2,7 @@
 
 Save public Reddit and X videos to `Downloads\VideoDownload` with a Windows Chrome extension and a local download helper.
 
-**Version 0.1.0: runnable MVP candidate. Real downloads, playback and recovery have passed; final verification of inline controls on the live websites in the user's normal Chrome is still open.** See [validation evidence and remaining checks](DOCUMENTATION.md).
+**Version 0.1.0: working MVP. Real downloads, playback and recovery passed. The user confirmed Reddit's inline button and the corrected X button, download and playback with sound in normal Chrome.** See [validation evidence and coverage limits](DOCUMENTATION.md).
 
 ## Start using this checkout
 

@@ -4,7 +4,7 @@ Last updated: 2026-09-25
 
 ## Current state
 
-Version 0.1.0 is a runnable MVP candidate. M0-M3 are complete. Reddit and X extraction, real Windows/Chrome Native Messaging, output playback, Stop, Continue, Retry, Stop and delete, browser restart recovery, and fixture-based content controls have passed. The user confirmed Reddit controls appear correctly in normal Chrome and reported an X layout problem. That problem is fixed in the rebuilt extension and awaits live recheck. M6 documentation and automated evidence are recorded below; this is not yet an unconditional final acceptance claim.
+Version 0.1.0 is the completed initial MVP. Reddit and X extraction, real Windows/Chrome Native Messaging, output playback, Stop, Continue, Retry, Stop and delete, browser restart recovery, and fixture-based content controls passed. In normal Chrome the user confirmed Reddit's button, reported the X layout issue, and then confirmed the corrected X button plus download and playback with sound. The final helper storage guard is installed and verified. M0-M6 are complete for these supported public workflows; the evidence and limits below do not imply universal provider or format compatibility.
 
 ## Confirmed user decisions
 
@@ -100,7 +100,7 @@ Local evidence is in ignored `artifacts/browser-smoke.json`, `content-smoke.json
 | Requirement | Evidence / remaining limit |
 | --- | --- |
 | Public Reddit with separate audio; public X | Live extraction, real helper, stream inspection, full decode and Chrome playback passed for the supplied posts. |
-| Detail/feed/quote/selected media identity | Provider URL/DOM tests and real content-script fixtures passed. Current live site markup and native context-menu gesture still need normal-Chrome verification. Multi-video selection is implemented; no live multi-video post has been accepted. |
+| Detail/feed/quote/selected media identity | Provider URL/DOM tests and real content-script fixtures passed. The user verified live Reddit placement and live X placement/download. Quote/feed behavior has fixture evidence; the actual OS context-menu gesture and a live multi-video post are additional coverage not claimed here. |
 | No media, unsupported provider, auth requirement | Explicit errors, extractor/network allowlists, exact-host and redirect tests. No cookie import or generic embed downloading. Not every provider error response was reproduced live. |
 | Two active jobs and a queued third | Windows fake-worker integration test; the third remains queued until an owned slot exits. |
 | UI closure / browser restart / helper crash | Real UI closure and restart passed; abrupt host termination test proved worker and grandchild exit. Recovered jobs wait for user action. |
@@ -125,10 +125,10 @@ The final storage regression rejects a destination root replaced with a junction
 
 No change was made to product direction, licensing, required cloud dependencies, or the deferred integration scope. Browser test binaries, dependencies, runtime artifacts and private signing material are not committed. Normal Chrome was not restarted or automated.
 
-### Remaining work and continuation
+### Normal-Chrome acceptance and continuation
 
 The user confirmed the Reddit button appears correctly. Their X screenshot revealed that appending the control directly to the article created a stretched flex column. The X adapter now locates the post's own native action row and mounts the compact control after that row, inside the content column. When that anchor is unavailable it waits for a DOM update instead of changing the article layout. The rebuilt extension passed `pnpm check` and the Chrome content smoke, including 320px/640px width checks and visual inspection. Reddit placement remains unchanged. No helper change is required for this visual fix.
 
-Confirm the rebuilt X control in normal Chrome, helper connection, the selected post/video, an actual context-menu action and a short human playback/listening check. Broader live multi-video examples remain useful additional coverage. The final native storage guard is installed. The installer first refused the active connection; after the user disabled the extension, update and verification succeeded. The user can now enable it and reload the website.
+The user enabled the rebuilt extension, reloaded X, and explicitly confirmed that the button, downloading and playback with sound work. Together with the earlier Reddit placement confirmation, automated native/browser checks and both public media downloads, this closes the initial MVP acceptance. The final native storage guard is installed. The installer first refused the active connection; after the user disabled the extension, update and verification succeeded.
 
-It is safe to continue with documentation or isolated fixture work. Avoid reinstalling or taking the shared native-host journal while the user's Chrome test is running. The MVP goal remains active until the outstanding acceptance result is incorporated; no completion is inferred from the user's agreement to try it.
+The actual OS context-menu gesture, broader live quoted/feed/multi-video examples, redirected known-folder machines, and physical full-disk/ACL cases remain coverage limits rather than passed live checks. Their supported boundaries and automated evidence are listed above. No active implementation blocker remains for the initial MVP. Future provider changes or newly reported defects can be handled within the same architecture; direct-engine enablement and MCP/ChatGPT integration remain separate future work. Do not interrupt the user's running Chrome to start more tests.

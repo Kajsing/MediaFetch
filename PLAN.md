@@ -1,7 +1,7 @@
 # MediaFetch implementation plan
 
 Date: 2026-09-25  
-Status: M0-M3 complete. M4-M5 implementation, live extraction and controlled browser tests pass; live website entry-point acceptance remains open. M6 documentation and automated acceptance recorded; final normal-Chrome check pending. See DOCUMENTATION.md.
+Status: M0-M6 complete for the initial public Reddit/X MVP. Automated, live-download and normal-Chrome user acceptance are recorded in DOCUMENTATION.md, together with coverage limits. Direct downloading remains gated off; the verified native fallback is used.
 
 ## 1. Scope and approach
 
