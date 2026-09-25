@@ -116,5 +116,5 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   } catch (error) { state.notice = error instanceof Error ? error.message : 'Could not start the download.'; }
   await chrome.storage.local.set({ notice: state.notice });
   await chrome.action.setBadgeText({ text: state.notice === 'Download added.' ? '↓' : '!' });
-  await chrome.action.setBadgeBackgroundColor({ color: '#237f74' });
+  await chrome.action.setBadgeBackgroundColor({ color: '#6555a8' });
 });

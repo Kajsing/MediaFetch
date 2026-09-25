@@ -20,11 +20,11 @@ try {
   assert.equal(id, (await readFile(path.join(extension, 'extension-id.txt'), 'utf8')).trim());
   const page = await context.newPage();
   await page.goto(`chrome-extension://${id}/popup.html`);
-  await page.getByRole('heading', { name: 'Save the moment.' }).waitFor();
+  await page.getByRole('heading', { name: 'Save a video' }).waitFor();
   await page.getByText(/Local helper (connected|not connected)/, { exact: true }).waitFor();
   await page.screenshot({ path: path.join(root, 'artifacts/popup.png'), fullPage: true });
   await page.goto(`chrome-extension://${id}/options.html`);
-  await page.getByLabel('DEFAULT QUALITY').selectOption('720');
+  await page.getByLabel('Default quality', { exact: true }).selectOption('720');
   await page.getByLabel('Show Save video buttons on X').uncheck();
   await page.getByRole('button', { name: 'Save preferences' }).click();
   await page.getByText('Preferences saved.', { exact: true }).waitFor();
@@ -32,7 +32,7 @@ try {
   await page.waitForFunction(() => document.querySelector('#quality')?.value === '720');
   assert.equal(await page.getByLabel('Show Save video buttons on X').isChecked(), false);
   await page.goto(`chrome-extension://${id}/downloads.html`);
-  await page.getByRole('heading', { name: 'Your download shelf.' }).waitFor();
+  await page.getByRole('heading', { name: 'Downloads', exact: true }).waitFor();
   await page.getByText(/Local helper (connected|not connected)/, { exact: true }).waitFor();
   await page.screenshot({ path: path.join(root, 'artifacts/downloads.png'), fullPage: true });
   await worker.evaluate(() => chrome.contextMenus.update('mediafetch-download', { enabled: true }));

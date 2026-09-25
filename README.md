@@ -2,7 +2,7 @@
 
 Save public Reddit and X videos to `Downloads\VideoDownload` with a Windows Chrome extension and a local download helper.
 
-**Extension 0.1.1, compatible with helper 0.1.0.** The working MVP now includes **Remove all** on the download list and hides X's inline button on recognized GIF-only posts. See [validation evidence and coverage limits](DOCUMENTATION.md).
+**Extension 0.1.2, compatible with helper 0.1.0.** The selected **Slate** design now covers the grouped download list, compact popup, Settings and inline buttons. **Remove all** clears eligible history, and recognized X GIF-only posts do not receive a video button. See [validation evidence and coverage limits](DOCUMENTATION.md).
 
 ## Start using this checkout
 
@@ -12,7 +12,7 @@ The extension is built in `extension/dist`. The helper has been installed and ve
 2. Choose **Load unpacked** and select `C:\project\MediaFetch\extension\dist` (or the equivalent folder in your checkout).
 3. Pin MediaFetch from Chrome's Extensions menu. Open it and look for **Local helper connected**.
 4. Paste a Reddit or X post link, select a quality, and choose **Download video**. Alternatively, use **Save video** on a supported post or the **Download video with MediaFetch** context menu.
-5. Open **View all** for the persistent download list. Reload existing Reddit/X tabs after installing or reloading the extension.
+5. Open **View all downloads** for the persistent download list, grouped by In progress, Needs attention and Finished. Expand **Saved file** for a completed video's path. Reload existing Reddit/X tabs after installing or reloading the extension.
 
 Default output follows the Windows Downloads known folder, not Chrome's independently configurable download location. **Settings** shows the actual folder and lets you choose a different absolute local path. Existing jobs keep their original destination.
 
@@ -53,7 +53,7 @@ The installer creates a dedicated Python environment, installs pinned yt-dlp, va
 
 ## Update and uninstall
 
-For the 0.1.1 extension update, wait for active downloads to finish, click MediaFetch's reload button in `chrome://extensions`, then reload the download-list page and open X tabs. The existing helper 0.1.0 already supports this update; no helper reinstall is needed.
+For the 0.1.2 extension update, wait for active downloads to finish, click MediaFetch's reload button in `chrome://extensions`, then reload the download-list page and open Reddit/X tabs. The existing helper 0.1.0 already supports this update; no helper reinstall is needed.
 
 Stop downloads and disable MediaFetch in Chrome before updating the helper. Run `pnpm install --frozen-lockfile`, `pnpm check`, and the installer, then enable/reload the extension. Reload affected website tabs. Update extension and helper together.
 
@@ -91,11 +91,14 @@ pnpm exec playwright install chromium
 pnpm test:browser
 pnpm exec node scripts/content-smoke.mjs
 pnpm exec node scripts/history-smoke.mjs
+pnpm exec node scripts/ui-smoke.mjs
 ```
 
 For another Chrome for Testing binary, set `MEDIAFETCH_TEST_CHROME` to its executable. Browser scripts use isolated profiles under ignored `.local/`; they do not control the user's open Chrome. `content-smoke.mjs` uses controlled fixtures and a separate extension identity that cannot access the installed helper.
 
 `history-smoke.mjs` tests the real list UI and service worker with a native-protocol test double and a separate extension identity. It never clears the user's history. Native file preservation is checked independently by the Windows scheduler tests.
+
+`ui-smoke.mjs` uses the same isolation approach to exercise Slate's full state coverage, popup, settings, actions, keyboard focus, multi-video choice, helper reconnection and responsive layout. Its sample state matrix is deliberately broader than a real two-worker session; it is not a scheduler test. No real videos are downloaded.
 
 Live tests contact the providers and create real files. Keep other MediaFetch profiles disconnected while running them:
 

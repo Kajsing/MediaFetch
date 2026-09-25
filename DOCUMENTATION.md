@@ -4,7 +4,7 @@ Last updated: 2026-09-25
 
 ## Current state
 
-Extension **0.1.1** is built with the requested **Remove all** list control and GIF-aware X inline detection. It uses the existing installed helper **0.1.0** without changing its protocol or files. The patch passed 14 extension tests, 33 native tests, and isolated Chrome content/history checks. The user's actual history was not cleared during testing. Reload the extension and affected pages to activate the patch; the exact live GIF example still needs that refreshed-page observation.
+Extension **0.1.2** is built with the owner-selected **Slate** design: grouped download rows, compact popup, matching Settings, original local icons and purple inline controls. The final build passed typecheck, 14 extension tests and the isolated Chrome UI smoke; content and history smokes also passed for this update. Existing helper **0.1.0**, protocol, permissions and download semantics remain compatible. The user confirmed the preceding 0.1.1 history/GIF patch works. Activate Slate by reloading the extension after current downloads finish, then refresh its pages and Reddit/X tabs. Normal-Chrome visual acceptance of 0.1.2 is not claimed yet.
 
 Version 0.1.0 is the completed initial MVP. Reddit and X extraction, real Windows/Chrome Native Messaging, output playback, Stop, Continue, Retry, Stop and delete, browser restart recovery, and fixture-based content controls passed. In normal Chrome the user confirmed Reddit's button, reported the X layout issue, and then confirmed the corrected X button plus download and playback with sound. The final helper storage guard is installed and verified. M0-M6 are complete for these supported public workflows; the evidence and limits below do not imply universal provider or format compatibility.
 
@@ -16,6 +16,7 @@ Version 0.1.0 is the completed initial MVP. Reddit and X extraction, real Window
 - Provide a way to stop and delete an unfinished download.
 - Codex owns routine security and extractor configuration decisions within the approved architecture.
 - MCP/ChatGPT integration is future work and does not need implementation now.
+- The owner selected A — Slate from the four visual concepts for implementation.
 
 ## Implementation assumptions and refinements
 
@@ -159,4 +160,25 @@ Changed files: `design/EXPLORATION.md`, `design/mediafetch-directions.html`, `sc
 
 Validation: the skill preview renderer and `pnpm exec node scripts/design-smoke.mjs` passed using the isolated Chrome for Testing binary. All eight variants rendered without page errors, all four directions fit 736px/360px/320px widths without horizontal overflow, and the default 408px-wide popup stayed within 600px height. Local sample interactions passed. Screenshots were visually inspected. This validates the prototypes, not production integration or the full accessibility surface.
 
-Assumptions: mock controls operate on illustrative jobs only; the current download, recovery, deletion and security contracts remain authoritative. Grouping, compact popup content and layout are proposed presentation changes. No architecture, security, licensing or future-integration deviation occurred. Remaining: the owner's preferred direction, followed by production styling and complete state coverage. Exploration is complete; applying a visual direction awaits that design choice, not a technical blocker.
+Assumptions at exploration time: mock controls operate on illustrative jobs only; the current download, recovery, deletion and security contracts remain authoritative. Grouping, compact popup content and layout are proposed presentation changes. No architecture, security, licensing or future-integration deviation occurred. The owner subsequently selected Slate; the implementation follows below.
+
+## Slate implementation 0.1.2 — 2026-09-25
+
+Implemented the selected A direction in production extension pages. The cool graphite palette, lavender accent, compact header, sidebar and aligned job rows follow the concept. At narrow widths navigation becomes a horizontal row. Jobs are grouped into In progress, Needs attention and Finished; retained partials remain visible in Needs attention even for an otherwise completed state. Each state retains the actions from the existing contract. Merging is labeled explicitly and does not display a completed percentage.
+
+The popup shows two recent entries, the total count, attention count and a persistent View all downloads link. Its shell is bounded to 600px; longer content and expanded helper guidance scroll within it. Settings keeps quality, Reddit/X toggles, destination configuration and setup guidance. Completed paths are available under Saved file. Original local icons and regenerated toolbar marks use the selected palette. The inline button uses the same palette with its existing compact geometry, anchors and GIF detection.
+
+Interaction refinements: focus lost by disabling an action button is restored without overriding a user's move to another control; focused titles and file summaries survive refresh. Expanded file details and selected video numbers persist across background list updates. Native strings continue to render as text, with wrapping for long titles, errors and paths. The helper's ownership, recovery and deletion rules are unchanged.
+
+Changed files: `extension/src/ui/app.ts`, new `ui/icons.ts`, `extension/assets/app.css`, page shells, logo/raster icons, content button CSS, the service-worker badge color, manifest/package version, icon generator, browser/UI smoke scripts, README, PLAN, design status, this document and the implementation log. No helper source, installer, permission, dependency or private state changed.
+
+Validation:
+
+- `pnpm check` passed after the final UI changes: TypeScript, 14 behavioral tests and production build. Stable extension ID remains `gemldedgcfjpnfoohndccolnbnpkhalf`.
+- `scripts/ui-smoke.mjs` passed actual extension pages and service-worker routing with an isolated native-protocol double: all eleven job states, grouping, transitional actions, Stop/Continue/delete/removal, multi-video Retry including selection after focus moves, saved-file disclosure/focus retention, preferences after reload, destination routing, URL rejection, enqueue quality, popup bounds, reconnect and empty states. No page errors.
+- `scripts/history-smoke.mjs` passed eligible-history-only removal, retained jobs, disabled states and reload. `scripts/content-smoke.mjs` passed Reddit identity, compact X geometry at 320px/640px, quote handling, late/recycled GIF labels and settings toggles.
+- All three production pages fit 736px, 360px and 320px without horizontal overflow. Screenshots of desktop, popup, settings, narrow pages, empty and disconnected/long-content states were visually inspected. Evidence is in ignored `artifacts/slate/` plus the existing content/history artifacts.
+
+An initial UI smoke exposed focus loss on Stop; the implementation was corrected. A later assertion needed the job ID because grouping correctly moved the changed failed entry away from the first row. Final smoke passed. Native integration/live download tests were not rerun for this presentation change; prior evidence remains historical. Browser doubles do not prove live extraction or filesystem effects. No claim is made of a full accessibility audit or activation in the user's normal Chrome.
+
+Assumptions/deviations: the popup's two-entry limit and grouped rows implement the accepted concept. Setup guidance, saved paths, multi-video selection and unusual states remain available in the real product. Small focus/selection fixes support the new layout; there is no architecture/security/licensing change. Implementation is complete and can be activated through the standard extension reload once downloads finish. The installed helper and active browser were left running; no reinstall is required.

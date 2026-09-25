@@ -57,7 +57,7 @@ function scan(scope: ParentNode) {
     host.className = 'mediafetch-control';
     const shadow = host.attachShadow({ mode: 'closed' });
     const style = document.createElement('style');
-    style.textContent = `:host{display:inline-flex;flex:0 0 auto;align-self:flex-start;align-items:center;width:max-content;max-width:100%;height:auto;margin:${provider === 'x' ? '8px 0 4px' : '6px 10px'}}button{box-sizing:border-box;height:32px;white-space:nowrap;line-height:18px;font:600 12px system-ui;color:#d3fff2;background:#173c36;border:1px solid #47887b;border-radius:20px;padding:6px 12px;cursor:pointer}button:hover{background:#24574c}button:focus-visible{outline:2px solid #51e3b0;outline-offset:2px}button:disabled{opacity:.7;cursor:wait}`;
+    style.textContent = `:host{display:inline-flex;flex:0 0 auto;align-self:flex-start;align-items:center;width:max-content;max-width:100%;height:auto;margin:${provider === 'x' ? '8px 0 4px' : '6px 10px'}}button{box-sizing:border-box;height:32px;white-space:nowrap;line-height:18px;font:500 12px system-ui;color:#c4bdff;background:#2b2840;border:1px solid #55506d;border-radius:7px;padding:6px 11px;cursor:pointer}button:hover{background:#393451}button:focus-visible{outline:2px solid #aba3ff;outline-offset:2px}button:disabled{opacity:.7;cursor:wait}`;
     const button = document.createElement('button'); button.type = 'button';
     button.textContent = '↓ Save video'; button.title = 'Download this post with MediaFetch';
     button.addEventListener('click', async event => {

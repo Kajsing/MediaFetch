@@ -1,6 +1,6 @@
 # MediaFetch visual exploration
 
-Date: 2026-09-25. Status: four interactive concepts for owner selection; no production redesign selected or applied.
+Date: 2026-09-25. Status: the owner selected A — Slate. Extension 0.1.2 implements that direction; see [production evidence](../DOCUMENTATION.md#slate-implementation-012--2026-09-25). The original four-concept exploration and sample-only preview are preserved below as design context.
 
 ## Design problem
 

@@ -3,6 +3,8 @@
 Date: 2026-09-25  
 Status: M0-M6 complete for the initial public Reddit/X MVP. Automated, live-download and normal-Chrome user acceptance are recorded in DOCUMENTATION.md, together with coverage limits. Direct downloading remains gated off; the verified native fallback is used.
 
+Post-MVP presentation update: the owner selected A — Slate on 2026-09-25. Extension 0.1.2 implements that direction across the popup, full list, Settings and inline controls. Group jobs by state; show two recent entries in the popup with access to the full list; retain every action, error, recovery hint, saved path and media-choice capability below. Implementation and isolated browser validation are complete; normal-Chrome activation uses the standard reload procedure. See DOCUMENTATION.md for evidence. No theme selector or engine change is part of this update.
+
 ## 1. Scope and approach
 
 Build the Chrome extension described in the [feasibility study](mediafetch_chrome_extension_forundersoegelse.md), incorporating the user's subsequent decisions about destination, recovery, and deletion.
