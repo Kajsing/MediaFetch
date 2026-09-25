@@ -1,20 +1,31 @@
 # MediaFetch
 
-Save public Reddit, X and YouTube videos to `Downloads\VideoDownload` with a Windows Chrome extension and a local download helper.
+**Save public Reddit, X and YouTube videos to your computer.**
 
-**Extension and helper 0.2.0.** YouTube single-video support joins the **Slate** download list, popup and inline controls. **Remove all** clears eligible history, and recognized X GIF-only posts do not receive a video button. An older helper still handles Reddit/X and prompts for an update before YouTube downloads. See [validation evidence and coverage limits](DOCUMENTATION.md).
+MediaFetch pairs a Chrome extension with a local Windows helper. Pick a video, choose its quality, and manage the download from a persistent list. Videos are saved to `Downloads\VideoDownload` by default.
 
-## Start using this checkout
+**Version 0.2.0 · Windows 11 · Chrome Manifest V3 · Unpacked installation**
 
-The extension is built in `extension/dist`. YouTube requires the updated local helper; follow the update instructions below before using it.
+[Install](#install) · [Download controls](#download-controls) · [Update](#update-and-uninstall) · [Troubleshooting](#troubleshooting)
 
-1. Open `chrome://extensions` in Chrome and enable **Developer mode**.
-2. Choose **Load unpacked** and select `C:\project\MediaFetch\extension\dist` (or the equivalent folder in your checkout).
-3. Pin MediaFetch from Chrome's Extensions menu. Open it and look for **Local helper connected**.
-4. Paste a Reddit, X or YouTube video link, select a quality, and choose **Download video**. Alternatively, use **Save video** on a supported page or the **Download video with MediaFetch** context menu.
-5. Open **View all downloads** for the persistent download list, grouped by In progress, Needs attention and Finished. Expand **Saved file** for a completed video's path. Reload existing Reddit/X/YouTube tabs after installing or reloading the extension.
+## What it does
 
-Default output follows the Windows Downloads known folder, not Chrome's independently configurable download location. **Settings** shows the actual folder and lets you choose a different absolute local path. Existing jobs keep their original destination.
+- Adds compact **Save video** buttons to supported pages, with a toolbar popup, pasted links and a context-menu action as other entry points.
+- Downloads video with its available audio and merges separate streams locally.
+- Offers **Up to 720p**, **Up to 1080p** (the default), and **Best available**. Capped choices never silently exceed their limit.
+- Runs up to two downloads at once and queues the rest. Closing the popup does not stop work.
+- Keeps unfinished downloads available for **Continue** or **Retry** after a browser/helper restart.
+- Uses the **Slate** interface: a compact popup, grouped download list and Settings with a custom download folder and per-site button preferences.
+
+## Supported sites
+
+| Site | Supported workflow | Boundaries |
+| --- | --- | --- |
+| Reddit | Public native videos, post links and recognized detail/feed controls. | External embeds and ambiguous media are not guessed. |
+| X / Twitter | Public video posts, recognized detail/feed controls and quoted-video targeting. | Recognized GIF-only players have no inline video button. Multiple videos may require an explicit selection. |
+| YouTube | Public single videos through watch, youtu.be and Shorts links; inline controls on recognized watch/active-Short layouts. | No playlist/channel downloads, live or still-processing streams, authenticated/age-restricted videos, or DRM. Playlist/time/tracking context is discarded. |
+
+If a page has no button, open the video's permalink or paste its link into MediaFetch. Mobile YouTube layouts and broader live Shorts layouts have not been verified. See [acceptance evidence and coverage limits](DOCUMENTATION.md).
 
 ## Download controls
 
@@ -24,38 +35,63 @@ Default output follows the Windows Downloads known folder, not Chrome's independ
 | Continue | Re-resolve the post and try compatible retained data. Some servers require a restart. |
 | Retry | Start a fresh attempt under the same list entry, cleaning up that job's obsolete partials. |
 | Stop and delete / Delete partial files | Stop owned work and remove only that job's unfinished artifacts. |
-| Remove from list | Remove a finished entry; keep the saved video. |
+| Remove from list | Remove an inactive entry without partial files; keep any saved video. |
 | Remove all | Clear inactive entries without partial files. Keep saved videos, active/queued downloads, and recoverable partial data. |
 
 Two jobs can run at once; others wait. Closing the popup or list does not stop downloads. Closing Chrome stops owned work; reopening restores unfinished jobs for an explicit Continue or Retry. Multiple videos require an explicit selection when the source cannot identify a single selected video.
 
-## Install on another Windows machine
+## Install
 
-Requirements: Windows 11, Chrome 123+, Python 3.12+, Node.js 24+ with pnpm, and a working `ffmpeg` executable. No administrator access is required by MediaFetch. Install prerequisite tools separately; no third-party binaries are bundled here.
+Requirements: Windows 11, Chrome 123+, Python 3.12+, Node.js 24+ with pnpm, and a working `ffmpeg` executable. Use Git or download a copy of this repository. The tested interpreter is Python 3.12. No administrator access is required by MediaFetch; prerequisite tools must already be installed.
 
-From the repository root in PowerShell:
+MediaFetch currently installs from source. The generated `extension/dist` folder is not included in Git. In PowerShell:
 
 ```powershell
+git clone https://github.com/Kajsing/MediaFetch.git
+cd MediaFetch
 pnpm install --frozen-lockfile
 pnpm build
 powershell -NoProfile -ExecutionPolicy Bypass -File .\installer\install.ps1
 ```
 
-The execution-policy override applies to that one process; it does not change the system policy. If discovery fails, pass explicit paths:
+If you already have a checkout, start from its root and omit the clone and `cd` commands. The execution-policy override applies only to that installer process. If Python or ffmpeg discovery fails, pass explicit paths:
 
 ```powershell
 .\installer\install.ps1 -PythonPath 'C:\path\to\python.exe' -FfmpegPath 'C:\path\to\ffmpeg.exe'
 ```
 
-Then load `extension/dist` as described above. The checked-in public development key keeps the extension ID stable: `gemldedgcfjpnfoohndccolnbnpkhalf`. Do not regenerate it during ordinary updates. The helper accepts only this registered extension origin.
+Load the built extension:
 
-The installer creates a dedicated Python environment, installs pinned yt-dlp, EJS and Deno packages, validates a real protocol handshake and Deno execution, and registers `dk.kajsing.mediafetch` under HKCU. It resolves physical paths when a packaged terminal virtualizes LocalAppData. The HKCU registration's default value identifies the actual `native-host.json`; `config.json` and `state/jobs.json` are beside it.
+1. Open `chrome://extensions` in Chrome and enable **Developer mode**.
+2. Choose **Load unpacked** and select `extension\dist` inside your checkout. Run `Resolve-Path .\extension\dist` in PowerShell if you need its full path.
+3. Pin MediaFetch from Chrome's Extensions menu, open it, and check for **Local helper connected**.
+4. Reload any Reddit, X or YouTube tabs that were already open.
+
+Click **Save video** on a supported page, use **Download video with MediaFetch** in Chrome's context menu, or paste a video link into the popup and choose **Download video**. Open **View all downloads** for the list, grouped into **In progress**, **Needs attention** and **Finished**. Expand **Saved file** for a completed video's path.
+
+The default destination follows the Windows Downloads known folder plus `VideoDownload`. Chrome's separate download-location setting does not control this helper. **Settings** displays the actual folder and lets you enter another absolute local path. Existing jobs keep their original destination; duplicate filenames receive a suffix instead of overwriting a saved video.
+
+The checked-in public development key keeps the extension ID stable: `gemldedgcfjpnfoohndccolnbnpkhalf`. Do not regenerate it during ordinary updates. The helper accepts only this registered extension origin.
+
+The installer creates a dedicated Python environment, installs pinned yt-dlp, EJS and Deno packages, validates a real protocol handshake and Deno execution, and registers `dk.kajsing.mediafetch` under HKCU. You do not need to install Deno separately. It resolves physical paths when a packaged terminal virtualizes LocalAppData. The HKCU registration's default value identifies the actual `native-host.json`; `config.json` and `state/jobs.json` are beside it.
 
 ## Update and uninstall
 
-The 0.2.0 YouTube update requires a helper reinstall. It adds the local JavaScript runtime and YouTube page permissions. Saved videos, settings and history are preserved.
+**Upgrading from 0.1.x to 0.2.0 requires updating the helper as well as the extension.** YouTube adds a local JavaScript runtime and exact YouTube page permissions. Older helpers continue to serve Reddit/X and display an update message for YouTube.
 
-Stop downloads and disable MediaFetch in Chrome before updating the helper. Run `pnpm install --frozen-lockfile`, `pnpm check`, and the installer, then enable/reload the extension. Reload affected website tabs. Update extension and helper together.
+Let active downloads finish, or stop them to retain partials. Disable MediaFetch in `chrome://extensions` so the helper releases its journal. From your checkout:
+
+```powershell
+git switch main
+git pull --ff-only
+pnpm install --frozen-lockfile
+pnpm check
+powershell -NoProfile -ExecutionPolicy Bypass -File .\installer\install.ps1
+```
+
+For a checkout created before `main` existed, run `git fetch origin` first, then `git switch --track origin/main` instead of `git switch main`.
+
+Enable/reload the extension and reload affected website tabs. Check for **Local helper connected**. Saved videos, settings, history and recoverable data are preserved; the installer refuses to replace an active helper.
 
 To unregister the helper:
 
@@ -84,13 +120,24 @@ Remove the extension separately in `chrome://extensions`. Uninstall preserves vi
 
 ## Development and validation
 
+Version 0.2.0 passed **18 extension tests and 40 Windows native tests**, plus isolated browser checks, real provider downloads and video/audio validation. The owner confirmed the YouTube button and download with sound in normal Chrome. These are recorded results, not a guarantee for every provider layout or format; see [full evidence](DOCUMENTATION.md).
+
+From a checkout with its JavaScript dependencies installed:
+
 ```powershell
 pnpm check
 py -3.12 -m venv native-host/.venv
 native-host/.venv/Scripts/python.exe -m pip install -r native-host/requirements.txt
 .\scripts\test-native.ps1
+```
+
+<details>
+<summary>Browser fixtures and opt-in live tests</summary>
+
+Install a test browser, then run the isolated content/UI fixtures:
+
+```powershell
 pnpm exec playwright install chromium
-pnpm test:browser
 pnpm exec node scripts/content-smoke.mjs
 pnpm exec node scripts/history-smoke.mjs
 pnpm exec node scripts/ui-smoke.mjs
@@ -103,15 +150,16 @@ For another Chrome for Testing binary, set `MEDIAFETCH_TEST_CHROME` to its execu
 
 `ui-smoke.mjs` uses the same isolation approach to exercise Slate's full state coverage, popup, settings, actions, keyboard focus, multi-video choice, helper reconnection and responsive layout. Its sample state matrix is deliberately broader than a real two-worker session; it is not a scheduler test. No real videos are downloaded.
 
-Live tests contact the providers and create real files. Keep other MediaFetch profiles disconnected while running them:
+The following checks use the installed helper. Keep other MediaFetch profiles disconnected while running them; live tests contact the providers and create real files:
 
 ```powershell
+pnpm test:browser
 pnpm exec node scripts/live-smoke.mjs --run 'https://www.reddit.com/r/accelerate/comments/1wplszd/enterprised_bridge_recreated_in_blender_using_400/' 'https://x.com/M1Astra/status/2103152489772073421'
 pnpm exec node scripts/recovery-smoke.mjs --run
 pnpm exec node scripts/validate-media.mjs
 ```
 
-The first script uses the selected destination. Recovery tests temporarily use a new `.local/` directory and restore the destination. Media validation requires ffprobe as well as ffmpeg. Evidence and screenshots go into ignored `artifacts/`.
+The Reddit/X live script uses the selected destination. Recovery tests temporarily use a new `.local/` directory and restore the destination. Media validation requires ffprobe as well as ffmpeg. Evidence and screenshots go into ignored `artifacts/`.
 
 YouTube acceptance uses a separate journal and output folder and can run while the user's normal Chrome remains open:
 
@@ -123,7 +171,11 @@ pnpm exec node scripts/youtube-content-smoke.mjs --live
 
 The owner selected this video for testing. Use another public single-video URL when needed. The content smoke's live mode checks page placement and click identity using an isolated extension; it does not connect to the installed helper. Native acceptance separately verifies download, byte reuse, restart and deletion. Shorts fixtures do not prove every live Shorts layout.
 
+</details>
+
 ## Scope and project records
+
+`main` contains the integrated project, including the completed Reddit/X MVP, Slate design and YouTube milestone.
 
 All downloads currently use the helper. Browser direct downloading stays disabled because destination equivalence and unfinished-file cleanup are not established; its unused permission is omitted. This follows the capability gate in [PLAN.md](PLAN.md). Audio-only exports and MCP/ChatGPT integration remain out of scope.
 
