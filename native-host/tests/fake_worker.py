@@ -5,11 +5,13 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
+from mediafetch_host.worker import emit
+
 spec = json.loads(sys.stdin.buffer.readline())
 folder = Path(spec["staging"])
 content_id = spec["url"].split("/")[-1]
-def emit(event):
-    print(json.dumps(event), flush=True)
+title = 'Fixture æøå わたし 🎬' if content_id == '107' else f'Fixture {content_id}'
 
 if content_id == "103":
     emit({"type": "error", "code": "CONTENT_UNAVAILABLE", "message": "Test source is unavailable."})
@@ -18,7 +20,7 @@ fingerprint = {"id": content_id, "formats": [{"id": "test", "ext": "mp4"}]}
 if spec.get("resumeData") and spec["resumeData"] != fingerprint:
     emit({"type": "error", "code": "RESUME_UNAVAILABLE", "message": "The source format changed. Choose Retry."})
     raise SystemExit(1)
-emit({"type": "identity", "title": f"Fixture {content_id}", "data": fingerprint})
+emit({"type": "identity", "title": title, "data": fingerprint})
 partial = folder / "media.mp4.part"
 with partial.open("ab") as output:
     output.write(b"fixture data")
@@ -32,4 +34,4 @@ if content_id in ("102", "104", "106"):
 else:
     time.sleep(0.15)
 partial.rename(folder / "media.mp4")
-emit({"type": "complete", "filename": "media.mp4", "title": f"Fixture {content_id}"})
+emit({"type": "complete", "filename": "media.mp4", "title": title})

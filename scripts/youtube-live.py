@@ -1,6 +1,7 @@
 """Opt-in real native YouTube acceptance in a separate journal and destination."""
 import argparse
 import json
+import os
 import queue
 import shutil
 import subprocess
@@ -79,6 +80,7 @@ def main():
     parser.add_argument("--recovery", action="store_true")
     parser.add_argument("--evidence", type=Path, default=ROOT / "artifacts/youtube-live.json")
     parser.add_argument("--expected-title")
+    parser.add_argument("--without-node", action="store_true", help="Match Chrome's environment when Node is absent from PATH")
     parser.add_argument("url")
     args = parser.parse_args()
     (ROOT / ".local").mkdir(exist_ok=True)
@@ -87,8 +89,13 @@ def main():
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg is required")
+    if args.without_node:
+        # Resolve tools first; restrict only this isolated acceptance process and
+        # its children, never the user's global or running Chrome environment.
+        os.environ['PATH'] = str(Path(os.environ['SystemRoot']) / 'System32')
+        assert shutil.which('node') is None, 'The restricted test PATH still contains Node'
     config.write_text(json.dumps({"extensionId": "a" * 32, "ffmpeg": str(Path(ffmpeg).resolve()), "stateDirectory": str(local / "state"), "attemptTimeout": 300}), encoding="utf-8")
-    evidence = {"url": args.url, "isolatedState": str(local), "results": [], "checks": []}
+    evidence = {"url": args.url, "isolatedState": str(local), "nodeOnPath": bool(shutil.which('node')), "results": [], "checks": []}
     host = Host(config)
     try:
         hello = host.call("hello")

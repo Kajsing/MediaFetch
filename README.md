@@ -4,7 +4,7 @@
 
 MediaFetch pairs a Chrome extension with a local Windows helper. Pick a video, choose its quality, and manage the download from a persistent list. Videos are saved to `Downloads\VideoDownload` by default.
 
-**Version 0.2.1 · Windows 11 · Chrome Manifest V3 · Unpacked installation**
+**Version 0.2.3 · Windows 11 · Chrome Manifest V3 · Unpacked installation**
 
 [Install](#install) · [Download controls](#download-controls) · [Update](#update-and-uninstall) · [Troubleshooting](#troubleshooting)
 
@@ -78,7 +78,7 @@ The installer creates a dedicated Python environment, installs pinned yt-dlp, EJ
 
 ## Update and uninstall
 
-**Update both the helper and the extension for 0.2.1.** The helper change supplies title-based YouTube filenames; the extension change supplies current desktop Shorts controls. Existing downloaded files keep their names. Upgrading from 0.1.x also adds the local YouTube JavaScript runtime and exact YouTube page permissions. Older helpers continue to serve Reddit/X and display an update message for YouTube.
+**Update both the helper and the extension for 0.2.3.** The helper fixes Unicode-title failures and YouTube cache cleanup when Chrome has no Node on its search path. It includes 0.2.1's title-based YouTube filenames and current desktop Shorts controls. Existing downloaded files keep their names. After updating, **Delete partial files** can clear an older completed download's cache warning while preserving its saved video. Upgrading from 0.1.x also adds the local YouTube JavaScript runtime and exact YouTube page permissions.
 
 Let active downloads finish, or stop them to retain partials. Disable MediaFetch in `chrome://extensions` so the helper releases its journal. From your checkout:
 
@@ -121,7 +121,7 @@ Remove the extension separately in `chrome://extensions`. Uninstall preserves vi
 
 ## Development and validation
 
-Version 0.2.1 passed **19 extension tests and 42 Windows native tests**, plus isolated content checks, live watch/Shorts placement and click identity, real downloads with title-based filenames, and full video/audio validation. The owner previously confirmed 0.2.0's watch-page workflow in normal Chrome; installation and normal-Chrome status for this update are recorded separately in [full evidence](DOCUMENTATION.md). These results do not guarantee every provider layout or format.
+Version 0.2.3 passed **19 extension tests and 48 Windows native tests**, including Unicode titles, legacy runtime-cache cleanup and preservation of completed videos. The reported Japanese-title video passes download, full video/audio validation and complete cleanup in an isolated environment without Node on its search path. Prior 0.2.1 acceptance covers live watch/Shorts controls and title-based filenames. Installation and normal-Chrome status are recorded separately in [full evidence](DOCUMENTATION.md). These results do not guarantee every provider layout or format.
 
 From a checkout with its JavaScript dependencies installed:
 

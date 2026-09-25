@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MediaFetch",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "Save videos from Reddit, X and YouTube to your computer.",
   "minimum_chrome_version": "123",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmNCJ3HyqlXkyOJm8q/naPA6b9FQ9uNPd9Ifh8TtHO32bxSR7udi5VrlIiOHbTjDxF1mremoImKiaYKREUT7t1PWCaH34c4nLAi1hYUgaXf0OVBpn+KwP6/V/o7TBmghvvZntLrKc7aLqjFuPpFPNfD+loITTTj7yNNShQ4UptTuKVnN1hGQhbJI+pzX03AJXRrTMQyHk2nsXabr3kdtGCbMYMyEWopPSny3HUrr9SZyYmInPIBknedNZf/o6XIrvbSkzlD9aF9/YWxy0i8iMo4u0wG5MRcftkIPoBvEsTHaiQnIslrnXlLPH/kCM1KR7kaN9cqAQLfYxf4YZE1XoYQIDAQAB",

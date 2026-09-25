@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mediafetch-host"
-version = "0.2.1"
+version = "0.2.3"
 description = "Local Native Messaging download host for MediaFetch"
 requires-python = ">=3.12"
 dependencies = ["yt-dlp==2026.8.19", "yt-dlp-ejs==0.8.0", "deno==2.9.5"]

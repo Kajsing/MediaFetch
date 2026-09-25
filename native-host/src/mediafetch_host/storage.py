@@ -8,7 +8,8 @@ from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from .errors import MediaFetchError
 from .protocol import require_uuid
-from .windows import locked_directory, delete_regular_file, rename_regular_file
+from .windows import locked_directory, delete_regular_file, delete_runtime_alias, rename_regular_file
+from .youtube import runtime_path
 
 
 def downloads_folder() -> Path:
@@ -101,13 +102,13 @@ def cleanup(root: str, job_id: str):
 
 
 def cleanup_runtime_cache(directory: Path):
-    """Remove only Deno's fixed analysis files and empty npm directory. Never recurse."""
+    """Remove Deno's fixed cache layout, including its verified legacy alias."""
     allowed = {name + suffix for name in ("dep_analysis_cache_v2", "node_analysis_cache_v2") for suffix in ("", "-shm", "-wal")}
     # The caller holds the job and all ancestor handles. This handle rejects
     # reparse points and prevents the cache directory being replaced mid-cleanup.
     with locked_directory(directory):
         children = list(directory.iterdir())
-        if any(child.name not in allowed | {"npm"} for child in children):
+        if any(child.name not in allowed | {"npm", "node_compat_bin"} for child in children):
             raise OSError("Unrecognized runtime cache contents were preserved")
         for child in children:
             if child.name == "npm":
@@ -115,6 +116,14 @@ def cleanup_runtime_cache(directory: Path):
                     if any(child.iterdir()):
                         raise OSError("Unexpected npm cache contents were preserved")
                 child.rmdir()  # Empty directory only, including if its name raced.
+            elif child.name == 'node_compat_bin':
+                with locked_directory(child):
+                    aliases = list(child.iterdir())
+                    if any(alias.name != 'node.exe' for alias in aliases):
+                        raise OSError('Unrecognized runtime alias contents were preserved')
+                    for alias in aliases:
+                        delete_runtime_alias(alias, runtime_path())
+                child.rmdir()  # Fixed one-file directory; never recurse.
             else:
                 delete_regular_file(child)
     directory.rmdir()

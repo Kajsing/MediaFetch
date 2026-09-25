@@ -1,10 +1,30 @@
+import io
+import json
 import unittest
+from contextlib import redirect_stdout
 from copy import deepcopy
 from yt_dlp.utils import DownloadError, ExtractorError
-from mediafetch_host.worker import extract_public_info, format_selector, QuietLogger
+from mediafetch_host.worker import emit, extract_public_info, format_selector, QuietLogger
 
 
 class WorkerTests(unittest.TestCase):
+    def test_worker_events_survive_non_utf8_windows_pipes(self):
+        for encoding in ('cp1252', 'ascii', 'utf-8'):
+            for title in ('Video æøå', 'わたし 🎬', 'Title with\nline break'):
+                with self.subTest(encoding=encoding, title=title):
+                    raw = io.BytesIO()
+                    with io.TextIOWrapper(raw, encoding=encoding) as stream:
+                        events = [
+                            {'type': 'identity', 'title': title, 'data': {'id': 'fixture'}},
+                            {'type': 'complete', 'title': title, 'filename': 'media.mp4'},
+                        ]
+                        with redirect_stdout(stream):
+                            for event in events:
+                                emit(event)
+                        # Scheduler reads bytes and expects valid JSON, independent
+                        # of the worker's Windows text-stream encoding.
+                        self.assertEqual([json.loads(line) for line in raw.getvalue().splitlines()], events)
+
     def test_malformed_public_x_response_uses_supported_public_embed_endpoint(self):
         class Initial:
             def extract_info(self, url, download):

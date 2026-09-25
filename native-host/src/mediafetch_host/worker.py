@@ -11,7 +11,9 @@ from .youtube import runtime_options, validate_video
 
 
 def emit(value: dict):
-    print(json.dumps(value, ensure_ascii=False, allow_nan=False), flush=True)
+    # Windows redirected stdout may use a legacy code page. JSON escapes keep
+    # the pipe UTF-8-compatible while decoding restores the exact Unicode text.
+    print(json.dumps(value, ensure_ascii=True, allow_nan=False), flush=True)
 
 
 class QuietLogger:

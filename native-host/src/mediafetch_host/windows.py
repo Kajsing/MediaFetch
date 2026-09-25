@@ -88,6 +88,19 @@ def locked_directory(path: Path):
 
 def delete_regular_file(path: Path):
     """Delete the opened file itself, without following links or reopening its name."""
+    _delete_file(path)
+
+
+def delete_runtime_alias(path: Path, runtime: Path | None):
+    """Remove an old job's exact Deno alias; never permit arbitrary hardlinks."""
+    if path.name != 'node.exe' or path.parent.name != 'node_compat_bin' or path.parent.parent.name != '.runtime-cache':
+        raise OSError('Unexpected runtime alias location')
+    if runtime and os.path.normcase(os.path.abspath(path)) == os.path.normcase(os.path.abspath(runtime)):
+        raise OSError('Refusing to delete the runtime executable')
+    _delete_file(path, runtime)
+
+
+def _delete_file(path: Path, linked_runtime: Path | None = None):
     handle = kernel.CreateFileW(str(path), 0x10000 | 0x80, 0x1 | 0x2, None, 3, 0x00200000, None)
     if handle == w.HANDLE(-1).value:
         raise ctypes.WinError(ctypes.get_last_error())
@@ -95,8 +108,24 @@ def delete_regular_file(path: Path):
         info = FileInfo()
         if not kernel.GetFileInformationByHandle(handle, ctypes.byref(info)):
             raise ctypes.WinError(ctypes.get_last_error())
-        if info.attributes & (0x400 | 0x10) or info.links > 1:
+        if info.attributes & (0x400 | 0x10):
             raise OSError("Refusing to remove a link or directory")
+        if info.links > 1:
+            if linked_runtime is None:
+                raise OSError('Refusing an unverified hardlink')
+            # Both identities come from opened, no-follow handles. The alias
+            # handle denies delete sharing, preventing name replacement here.
+            reference = kernel.CreateFileW(str(linked_runtime), 0x80, 0x1 | 0x2 | 0x4, None, 3, 0x00200000, None)
+            if reference == w.HANDLE(-1).value:
+                raise ctypes.WinError(ctypes.get_last_error())
+            try:
+                expected = FileInfo()
+                if not kernel.GetFileInformationByHandle(reference, ctypes.byref(expected)):
+                    raise ctypes.WinError(ctypes.get_last_error())
+                if expected.attributes & (0x400 | 0x10) or (info.volume, info.index_high, info.index_low) != (expected.volume, expected.index_high, expected.index_low):
+                    raise OSError('Runtime alias does not match the installed executable')
+            finally:
+                kernel.CloseHandle(reference)
         delete = ctypes.c_ubyte(1)
         if not kernel.SetFileInformationByHandle(handle, 4, ctypes.byref(delete), ctypes.sizeof(delete)):
             raise ctypes.WinError(ctypes.get_last_error())

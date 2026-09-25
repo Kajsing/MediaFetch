@@ -4,6 +4,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from unittest.mock import patch
 from mediafetch_host.storage import Journal, staging, cleanup, safe_filename, publish, has_partials
 from mediafetch_host.errors import MediaFetchError
 from mediafetch_host.windows import locked_directory
@@ -71,6 +72,67 @@ class StorageTests(unittest.TestCase):
                 Journal(state, self.root / "output")
         finally:
             first.close()
+
+    def test_cleanup_removes_only_the_verified_legacy_runtime_alias(self):
+        runtime = self.root / 'deno.exe'
+        runtime.write_bytes(b'preserve runtime')
+        completed = self.root / 'saved.mp4'
+        completed.write_bytes(b'preserve video')
+        for hardlink in (True, False):
+            job_id = str(uuid.uuid4())
+            with staging(self.root, job_id) as folder:
+                shim = folder / '.runtime-cache/node_compat_bin'
+                shim.mkdir(parents=True)
+                alias = shim / 'node.exe'
+                if hardlink:
+                    os.link(runtime, alias)
+                else:
+                    alias.write_bytes(runtime.read_bytes())
+            with patch('mediafetch_host.storage.runtime_path', return_value=runtime):
+                cleanup(str(self.root), job_id)
+            self.assertFalse(folder.exists())
+            self.assertEqual(runtime.read_bytes(), b'preserve runtime')
+            self.assertEqual(runtime.stat().st_nlink, 1)
+            self.assertEqual(completed.read_bytes(), b'preserve video')
+
+    def test_runtime_alias_cleanup_preserves_unexpected_contents_and_foreign_links(self):
+        import _winapi
+        runtime = self.root / 'deno.exe'
+        runtime.write_bytes(b'runtime')
+        foreign = self.root / 'unrelated.exe'
+        foreign.write_bytes(b'preserve')
+        for variant in ('foreign-hardlink', 'unknown-file', 'nested-directory', 'junction'):
+            with self.subTest(variant=variant):
+                job_id = str(uuid.uuid4())
+                with staging(self.root, job_id) as folder:
+                    cache = folder / '.runtime-cache'
+                    cache.mkdir()
+                    shim = cache / 'node_compat_bin'
+                    if variant == 'junction':
+                        outside = self.root / ('outside-' + job_id)
+                        outside.mkdir()
+                        (outside / 'node.exe').write_bytes(b'preserve')
+                        _winapi.CreateJunction(str(outside), str(shim))
+                    else:
+                        shim.mkdir()
+                        if variant == 'foreign-hardlink':
+                            os.link(foreign, shim / 'node.exe')
+                        elif variant == 'unknown-file':
+                            (shim / 'unexpected.txt').write_bytes(b'preserve')
+                        else:
+                            (shim / 'node.exe').mkdir()
+                            (shim / 'node.exe/keep.txt').write_bytes(b'preserve')
+                try:
+                    with patch('mediafetch_host.storage.runtime_path', return_value=runtime), self.assertRaises(OSError):
+                        cleanup(str(self.root), job_id)
+                    self.assertTrue(shim.exists())
+                    self.assertEqual(foreign.read_bytes(), b'preserve')
+                    self.assertEqual(runtime.read_bytes(), b'runtime')
+                    if variant == 'junction':
+                        self.assertEqual((outside / 'node.exe').read_bytes(), b'preserve')
+                finally:
+                    if variant == 'junction':
+                        shim.rmdir()
 
     def test_youtube_uses_the_title_and_preserves_duplicate_downloads(self):
         for content_id, expected in (("GuseDyzBWWQ", "Purr.mp4"), ("abcdefghijk", "Purr (1).mp4")):

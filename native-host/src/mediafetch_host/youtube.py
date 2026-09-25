@@ -25,7 +25,9 @@ def runtime_options(folder: Path) -> dict:
     for key in list(os.environ):
         if key.upper().startswith(("DENO_", "NODE_", "NPM_", "BUN_")) or key.upper() in {"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"}:
             del os.environ[key]
-    os.environ.update(DENO_DIR=str(folder / ".runtime-cache"), DENO_NO_UPDATE_CHECK="1", DENO_NO_PROMPT="1")
+    # Chrome may have no Node on PATH. Deno's optional Node compatibility shim
+    # would then hardlink its executable into this job's cache. EJS needs no shim.
+    os.environ.update(DENO_DIR=str(folder / ".runtime-cache"), DENO_NO_UPDATE_CHECK="1", DENO_NO_PROMPT="1", DENO_DISABLE_NODE_SHIM="1")
     # HLS can otherwise silently delegate an unsupported manifest to ffmpeg,
     # whose own HTTP client does not pass through our redirect policy.
     from yt_dlp.downloader.external import FFmpegFD

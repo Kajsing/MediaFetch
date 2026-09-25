@@ -1,8 +1,10 @@
+import json
 import os
 import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 from mediafetch_host.jobs import Scheduler
 from mediafetch_host.storage import Journal
 from mediafetch_host.errors import MediaFetchError
@@ -41,6 +43,17 @@ class JobTests(unittest.TestCase):
         job = self.wait(self.add("101"), {"completed"})
         self.assertTrue(Path(job["path"]).is_file())
         self.assertGreater(job["bytes"], 0)
+
+    def test_unicode_title_survives_worker_pipe_publication_and_journal(self):
+        job = self.wait(self.add('107'), {'completed', 'failed'})
+        self.assertEqual(job['state'], 'completed', job.get('error'))
+        title = 'Fixture æøå わたし 🎬'
+        self.assertEqual(job['title'], title)
+        self.assertEqual(Path(job['path']).name, f'x_107_{title}.mp4')
+        self.assertTrue(Path(job['path']).is_file())
+        with self.scheduler.lock:
+            saved = json.loads(self.journal.path.read_text('utf-8'))
+        self.assertEqual(next(item for item in saved['jobs'] if item['id'] == job['id'])['title'], title)
 
     def test_two_job_limit_and_queue(self):
         a, b, c = self.add("102"), self.add("104"), self.add("101")
@@ -123,6 +136,33 @@ class JobTests(unittest.TestCase):
         self.scheduler.action("delete", {"jobId": job_id})
         self.assertTrue(Path(path).is_file())
         self.assertEqual(self.job(job_id)["state"], "completed")
+
+    def test_completed_cleanup_retry_removes_legacy_alias_and_keeps_saved_video(self):
+        from mediafetch_host.storage import staging
+        job_id = self.add('101')
+        saved = Path(self.wait(job_id, {'completed'})['path'])
+        deadline = time.monotonic() + 3
+        while job_id in self.scheduler.running and time.monotonic() < deadline:
+            time.sleep(.01)
+        original = saved.read_bytes()
+        runtime = self.root / 'deno.exe'
+        runtime.write_bytes(b'preserve runtime')
+        with staging(saved.parent, job_id) as folder:
+            shim = folder / '.runtime-cache/node_compat_bin'
+            shim.mkdir(parents=True)
+            os.link(runtime, shim / 'node.exe')
+        with self.scheduler.lock:
+            self.scheduler._find(job_id).update(errorCode='CLEANUP_FAILED', error='Previous cleanup failed.', hasPartials=True)
+        with patch('mediafetch_host.storage.runtime_path', return_value=runtime):
+            self.scheduler.action('delete', {'jobId': job_id})
+        job = self.job(job_id)
+        self.assertEqual(job['state'], 'completed')
+        self.assertFalse(job['hasPartials'])
+        self.assertNotIn('errorCode', job)
+        self.assertNotIn('error', job)
+        self.assertFalse(folder.exists())
+        self.assertEqual(saved.read_bytes(), original)
+        self.assertEqual(runtime.read_bytes(), b'preserve runtime')
 
     def test_forgetting_completed_history_preserves_the_published_video(self):
         job_id = self.add("101")

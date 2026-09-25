@@ -1,0 +1,17 @@
+# Deno cleanup without Node on Chrome's PATH
+
+The owner confirmed the Watashi download reached disk after 0.2.2, but its row reported CLEANUP_FAILED. Read-only inspection found the exact remaining `.runtime-cache/node_compat_bin/node.exe`, a two-link reference to the installed Deno executable, alongside the normal analysis databases and empty npm directory. The published MP4 is intact.
+
+Root cause: pinned Deno 2.9.5 creates a Node compatibility alias only when no real Node is on PATH. The developer's test environment had Node, but ordinary Chrome did not. Verified against the [pinned Deno implementation](https://github.com/denoland/deno/blob/v2.9.5/cli/node_compat_shim.rs). A real Deno test with a restricted PATH reproduced the missing coverage before the fix.
+
+Fix: explicitly set `DENO_DISABLE_NODE_SHIM=1` after clearing inherited runtime overrides. EJS needs no Node shim. Older attempts can clean up only the exact one-file alias directory, without recursion. A hardlinked alias must match the trusted installed runtime's volume/file identity using no-follow handles; other hardlinks, reparse points, unknown children and nested directories remain rejected. The normal deletion and publication guards are unchanged. The owned alias handle prevents replacement during validation/deletion; only its directory entry is removed and the runtime survives. A copied single-link alias can use normal file deletion.
+
+Version 0.2.3 includes the pending 0.2.2 source changes. New checks cover runtime startup without Node, hardlink/copy cleanup, foreign-link/junction/unknown-content preservation, and completed-job cleanup retry preserving its saved video and clearing only the cleanup warning. All 48 native tests and `pnpm check` (19 tests/typecheck/build) passed.
+
+Real framed acceptance with `--without-node` downloaded the reported video, completed without error/partials and removed staging. Full decode and Chrome playback passed: 1920×1080 H.264/AAC stereo, 117.632 seconds, 27,826,367 bytes, −7.8 dB mean audio and nonzero browser RMS. Ignored evidence: `artifacts/youtube-no-node-live.json` and `youtube-no-node-media-validation.json`.
+
+The owner used Remove all, which correctly removed ten eligible entries and preserved only the completed row with retained cache data, then disabled MediaFetch. Installation of 0.2.3 and its handshake/provider/ffmpeg/Deno checks passed; all eleven installed source files match. The journal was byte-for-byte unchanged by installation.
+
+The existing completed row was then repaired through the installed helper's native `delete` cleanup action. Its state/title/path remain completed and intact, while the warning/partials and owned staging are gone. SHA-256 comparisons prove the saved video and installed runtime are unchanged; other job records were preserved. The row is now eligible for Remove all. Ignored boolean evidence: `.local/cleanup-repair-evidence.json`. No manual journal edit, browser restart, redownload or completed-file removal was performed.
+
+Work remains on `main`. The owner subsequently confirmed a complete large YouTube download with perfectly synchronized audio/video in normal Chrome. Explorer shows 1,247,528 KB; a read-only journal check records 1,277,468,514 bytes, completed, no error/partials, with no owned staging directory left. Playback is owner-observed, not an additional agent decode. This closes the remaining manual acceptance check for the reported failure. Documentation-only acceptance updates passed consistency/whitespace checks; runtime tests were not repeated.

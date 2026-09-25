@@ -117,3 +117,14 @@ class YouTubeTests(unittest.TestCase):
             self.assertEqual(resumed, [8192])
         finally:
             _urllib.RedirectHandler = original
+
+    def test_runtime_does_not_create_a_node_shim_when_chrome_has_no_node_on_path(self):
+        from yt_dlp.downloader.external import FFmpegFD
+        from yt_dlp.extractor.youtube.jsc._builtin.deno import DenoJCP
+        runtime = runtime_path()
+        with tempfile.TemporaryDirectory() as temp, patch.dict(os.environ, {'PATH': '', 'DENO_DISABLE_NODE_SHIM': '0'}), patch.object(FFmpegFD, 'real_download'):
+            runtime_options(Path(temp))
+            result = subprocess.run([str(runtime), 'run', *DenoJCP._DENO_BASE_OPTIONS, '--no-npm', '--cached-only', '-'], input='console.log("ready")', text=True, capture_output=True, timeout=20, cwd=temp)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('ready', result.stdout)
+            self.assertFalse((Path(temp) / '.runtime-cache/node_compat_bin').exists())

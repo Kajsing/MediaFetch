@@ -168,13 +168,27 @@ Exit: the complete single-video slice is built and verified, or the exact provid
 
 ### Y1.1 — YouTube title filenames and current desktop Shorts (authorized 2026-09-25)
 
-Status: source/build and automated/live isolated acceptance passed on `main`. Helper installation and normal-Chrome acceptance remain pending; exact evidence is in DOCUMENTATION.md.
+Status: source/build and automated/live isolated acceptance passed on `main`. Helper changes are installed as part of 0.2.2; normal-Chrome acceptance remains pending. Exact evidence is in DOCUMENTATION.md.
 
 Save new YouTube downloads using the extracted video title plus the media extension. Remove the provider/ID prefix for YouTube only. Normalize characters Windows cannot store, guard reserved device names, and bound long names without splitting Unicode characters. Keep collision-safe publication (`Title (1).mp4`) and all existing saved files. Do not rename previous downloads.
 
 Support the current desktop Shorts renderer, which exposes its identity through the visible player's permalink instead of reel `is-active`/`video-id` attributes. Place a compact control below the player's native top controls, without resizing the player or its action bar. Confirm the permalink matches the current URL; handle ads, hidden/stale players, recycled nodes and settings changes. Keep older recognized layouts and existing watch-page behavior.
 
 Validation: Windows filename/device-name/collision tests; sanitized old/current Shorts and SPA identity fixtures; existing content regressions; typecheck/build and native tests. Use the owner-selected `GuseDyzBWWQ` (Purr) Short and `MkycQONC3SE` (Tail Count Nine) watch video for isolated real page/download checks, exact filenames, streams, full decode and Chrome playback. Install only after passing checks and the inactive-helper guard; preserve the journal and active Chrome. Record any remaining normal-Chrome acceptance separately.
+
+### Y1.2 — Unicode download reliability (reported 2026-09-25)
+
+Status: 0.2.2 source/build, isolated live acceptance and installation passed on `main`. The owner confirmed the video reached disk with its Unicode title; a separate cleanup failure is tracked in Y1.3.
+
+Fix the worker event pipe so Windows' default text encoding cannot corrupt or reject non-ASCII video titles. Preserve exact decoded titles in status, history and filenames for every provider, without changing protocol or extractor policy. Cover identity/completion events under cp1252, ASCII and UTF-8 streams, plus actual owned-worker publication and journal persistence. Reproduce and then download the reported `-XUltrEfXFc` video; verify streams, full decode and Chrome playback. Install the combined 0.2.1/0.2.2 helper update only when the current helper is inactive, preserving history and downloads.
+
+### Y1.3 — YouTube cache cleanup in normal Chrome (reported 2026-09-26)
+
+Status: complete for the reported failure. Version 0.2.3 source/build, 48 native tests and real no-Node download/cleanup acceptance passed. Installation/verification and native cleanup of the existing row preserved the saved video/runtime hashes. The owner then confirmed a complete large-video download with synchronized audio/video in normal Chrome; its journal shows completed, 1,277,468,514 bytes, no error/partials, and its staging directory is absent. Evidence and coverage limits are in DOCUMENTATION.md.
+
+Disable Deno's unnecessary automatic Node compatibility alias so a Chrome environment without Node on PATH does not leave an extra executable hardlink in staging. Recognize only the fixed legacy alias path during cleanup; validate hardlink identity against the installed runtime through no-follow handles, preserve unknown entries, and retain all normal reparse/race/no-recursion guards. A cleanup retry must keep the published video and completed state while removing only owned cache files and clearing the warning. Remove all must continue preserving entries with retained files until cleanup succeeds.
+
+Validation: reproduce the no-Node environment with the pinned Deno runtime, verify its opt-out and unchanged restrictions, test legacy copy/hardlink cleanup plus foreign links/junctions/unknown entries, and test the scheduler's completed cleanup retry. Download the reported video with an explicitly restricted child PATH and require completed state with no partials/error; inspect video/audio. Install only after the helper is inactive, then repair the affected completed entry through the native API and verify the saved video/runtime hashes remain unchanged.
 
 ## 7. Required acceptance evidence
 
