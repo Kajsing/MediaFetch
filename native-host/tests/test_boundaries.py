@@ -46,5 +46,5 @@ class Boundaries(unittest.TestCase):
 
     def test_errors_do_not_echo_sensitive_details(self):
         code, message = classify_error("403 https://video.twimg.com/private?token=secret")
-        self.assertEqual(code, "AUTH_REQUIRED")
+        self.assertEqual(code, "ACCESS_DENIED")
         self.assertNotIn("secret", message)

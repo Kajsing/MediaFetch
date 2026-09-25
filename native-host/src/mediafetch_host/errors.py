@@ -9,10 +9,14 @@ def classify_error(message: str) -> tuple[str, str]:
     lower = message.lower()
     if "429" in lower or "rate limit" in lower:
         return "RATE_LIMITED", "The website is limiting requests. Wait a while, then retry."
-    if any(word in lower for word in ("login", "log in", "sign in", "authentication", "401", "403", "age-restricted", "cookies")):
+    if any(word in lower for word in ("login", "log in", "sign in", "authentication", "401", "age-restricted", "cookies")):
         return "AUTH_REQUIRED", "The website requires access that the local helper does not have. Browser cookies are not imported."
+    if "403" in lower:
+        return "ACCESS_DENIED", "The media server rejected this request. Retry later; if it persists, check for a helper update."
     if "requested format" in lower:
         return "FORMAT_UNAVAILABLE", "No video format meets this quality limit. Try another quality."
+    if "drm" in lower:
+        return "DRM_UNSUPPORTED", "This video uses protected media and cannot be downloaded by MediaFetch."
     if "unsupported url" in lower:
         return "UNSUPPORTED_MEDIA", "This post links to an unsupported media provider."
     if any(word in lower for word in ("no video", "no media", "does not contain", "no video could")):

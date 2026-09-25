@@ -2,7 +2,7 @@ export const HOST = 'dk.kajsing.mediafetch';
 export const PROTOCOL = 1;
 export const QUALITIES = ['best', '1080', '720'] as const;
 export type Quality = typeof QUALITIES[number];
-export type Provider = 'reddit' | 'x';
+export type Provider = 'reddit' | 'x' | 'youtube';
 export const STATES = ['queued', 'resolving', 'downloading', 'merging', 'stopping', 'deleting', 'stopped', 'interrupted', 'failed', 'completed', 'cancelled'] as const;
 export type JobState = typeof STATES[number];
 export type JobAction = 'stop' | 'delete' | 'retry' | 'resume' | 'forget';
@@ -16,13 +16,13 @@ export interface Job {
   resumedBytes?: number;
   resumeRestarted?: boolean;
 }
-export interface Settings { quality: Quality; inlineReddit: boolean; inlineX: boolean }
-export interface Snapshot { revision: number; jobs: Job[]; destination: string; ytDlpVersion?: string; ffmpeg: boolean; helperVersion: string }
+export interface Settings { quality: Quality; inlineReddit: boolean; inlineX: boolean; inlineYouTube: boolean }
+export interface Snapshot { revision: number; jobs: Job[]; destination: string; ytDlpVersion?: string; ffmpeg: boolean; helperVersion: string; providers?: Provider[] }
 export interface AppState {
   settings: Settings; snapshot: Snapshot | null; helper: 'ready' | 'missing' | 'error';
   helperError: string; notice: string; candidate: Candidate | null;
 }
-export const DEFAULT_SETTINGS: Settings = { quality: '1080', inlineReddit: true, inlineX: true };
+export const DEFAULT_SETTINGS: Settings = { quality: '1080', inlineReddit: true, inlineX: true, inlineYouTube: true };
 export const ACTIVE = new Set<JobState>(['queued', 'resolving', 'downloading', 'merging', 'stopping', 'deleting']);
 export function actionsFor(job: Job): JobAction[] {
   if (job.state === 'stopping' || job.state === 'deleting') return [];
@@ -41,7 +41,8 @@ export function quality(value: unknown): Quality {
 }
 export function parseSettings(value: unknown): Settings {
   if (!isRecord(value) || typeof value.inlineReddit !== 'boolean' || typeof value.inlineX !== 'boolean') throw new Error('Invalid settings.');
-  return { quality: quality(value.quality), inlineReddit: value.inlineReddit, inlineX: value.inlineX };
+  if (value.inlineYouTube !== undefined && typeof value.inlineYouTube !== 'boolean') throw new Error('Invalid settings.');
+  return { quality: quality(value.quality), inlineReddit: value.inlineReddit, inlineX: value.inlineX, inlineYouTube: value.inlineYouTube ?? true };
 }
 export function jobId(value: unknown): string {
   if (typeof value !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value)) throw new Error('Invalid download ID.');
@@ -49,8 +50,9 @@ export function jobId(value: unknown): string {
 }
 export function parseSnapshot(value: unknown): Snapshot {
   if (!isRecord(value) || !Number.isSafeInteger(value.revision) || !Array.isArray(value.jobs) || value.jobs.length > 250 || typeof value.destination !== 'string' || typeof value.ffmpeg !== 'boolean' || typeof value.helperVersion !== 'string') throw new Error('The helper returned an invalid status.');
+  if (value.providers !== undefined && (!Array.isArray(value.providers) || value.providers.some(provider => !['reddit', 'x', 'youtube'].includes(String(provider))))) throw new Error('The helper returned invalid provider support.');
   for (const job of value.jobs) {
-    if (!isRecord(job) || !STATES.includes(job.state as JobState) || !['x', 'reddit'].includes(String(job.provider)) || typeof job.url !== 'string' || typeof job.title !== 'string' || !Number.isSafeInteger(job.revision) || typeof job.resumable !== 'boolean' || typeof job.hasPartials !== 'boolean') throw new Error('The helper returned an invalid download.');
+    if (!isRecord(job) || !STATES.includes(job.state as JobState) || !['x', 'reddit', 'youtube'].includes(String(job.provider)) || typeof job.url !== 'string' || typeof job.title !== 'string' || !Number.isSafeInteger(job.revision) || typeof job.resumable !== 'boolean' || typeof job.hasPartials !== 'boolean') throw new Error('The helper returned an invalid download.');
     jobId(job.id); jobId(job.attemptId); quality(job.quality);
   }
   return value as unknown as Snapshot;

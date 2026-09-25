@@ -26,7 +26,7 @@ The [original feasibility study](mediafetch_chrome_extension_forundersoegelse.md
 - Do not silently change product direction, major architecture, the security model, licensing, deployment, or data ownership. Do not introduce required paid/cloud dependencies or destructive operations without authorization.
 - For a better approach that changes those boundaries, explain the proposed change, benefit, risk, and whether the existing plan can safely continue, then ask before changing direction.
 - If blocked, report what was attempted, what failed, the evidence and category of failure, alternatives, the recommended next step, and any actual user decision needed. Continue independent work where possible.
-- The future MCP/ChatGPT integration is parked. Keep YouTube disabled. Do not add speculative implementations for either.
+- The future MCP/ChatGPT integration is parked. The owner authorized the YouTube milestone after the Slate release; follow its single-video scope in PLAN.md. Do not add speculative future integrations.
 
 ## Product and architecture constraints
 

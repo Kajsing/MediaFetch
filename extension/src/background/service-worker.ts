@@ -38,6 +38,7 @@ function trustedContent(sender: chrome.runtime.MessageSender) {
 }
 async function start(candidate: Candidate, selectedQuality = state.settings.quality) {
   await ensureHost(true);
+  if (candidate.provider === 'youtube' && !state.snapshot?.providers?.includes('youtube')) throw new Error('Update the local helper to install YouTube support, then reconnect.');
   return native.request('enqueue', { url: candidate.url, quality: selectedQuality, mediaIndex: candidate.mediaIndex ?? null });
 }
 async function detectCurrent(): Promise<Candidate | null> {

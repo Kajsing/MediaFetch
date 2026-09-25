@@ -114,14 +114,14 @@ function qualitySelect(id: string) {
 function buildDownloadForm() {
   const form = el('form', 'card download-form'); form.id = 'download-form';
   const label = el('label', 'sr-only', 'Post link'); label.htmlFor = 'url';
-  const input = el('input'); input.id = 'url'; input.type = 'url'; input.required = true; input.placeholder = 'Paste a Reddit or X post link'; input.autocomplete = 'off';
+  const input = el('input'); input.id = 'url'; input.type = 'url'; input.required = true; input.placeholder = 'Paste a Reddit, X or YouTube link'; input.autocomplete = 'off';
   const field = el('div', 'url-field'); field.append(icon('link'), label, input);
   const row = el('div', 'form-row'); const select = qualitySelect('quality'); select.setAttribute('aria-label', 'Video quality');
   const submit = el('button', 'primary', 'Download video'); submit.prepend(icon('download')); submit.type = 'submit'; row.append(select, submit);
   form.append(field, row);
   form.addEventListener('submit', async event => {
     event.preventDefault(); if (pendingAction) return;
-    if (!canonical(input.value)) { status('Enter the permalink of a supported Reddit or X post.', true); return; }
+    if (!canonical(input.value)) { status('Enter a supported Reddit, X or YouTube video link.', true); return; }
     pendingAction = true; submit.disabled = true;
     try { await request('enqueue', { url: input.value, quality: select.value }); status('Added to your downloads.'); await refresh(); }
     catch (error) { status((error as Error).message, true); }
@@ -132,14 +132,14 @@ function buildOptions() {
   const form = el('form', 'card options-form');
   form.append(el('h2', '', 'Download preferences'), el('p', 'muted', 'Choose a quality limit and where Save video appears.'));
   const qLabel = el('label', '', 'Default quality'); qLabel.htmlFor = 'quality'; const q = qualitySelect('quality'); form.append(qLabel, q);
-  for (const [id, text] of [['inlineReddit', 'Show Save video buttons on Reddit'], ['inlineX', 'Show Save video buttons on X']]) {
+  for (const [id, text] of [['inlineReddit', 'Show Save video buttons on Reddit'], ['inlineX', 'Show Save video buttons on X'], ['inlineYouTube', 'Show Save video buttons on YouTube']]) {
     const label = el('label', 'toggle', text); const input = el('input'); input.type = 'checkbox'; input.id = id!; label.prepend(input); form.append(label);
   }
   const save = el('button', 'primary', 'Save preferences'); save.type = 'submit'; form.append(save);
   form.addEventListener('submit', async event => {
     event.preventDefault();
     try {
-      await request('saveSettings', { settings: { quality: q.value, inlineReddit: (document.querySelector('#inlineReddit') as HTMLInputElement).checked, inlineX: (document.querySelector('#inlineX') as HTMLInputElement).checked } });
+      await request('saveSettings', { settings: { quality: q.value, inlineReddit: (document.querySelector('#inlineReddit') as HTMLInputElement).checked, inlineX: (document.querySelector('#inlineX') as HTMLInputElement).checked, inlineYouTube: (document.querySelector('#inlineYouTube') as HTMLInputElement).checked } });
       status('Preferences saved.');
     } catch (error) { status((error as Error).message, true); }
   }); main.append(form);
@@ -169,7 +169,7 @@ function renderJob(job: Job) {
   const state = el('span', 'job-state', job.state === 'downloading' && progress !== null ? `${stateLabel} · ${Math.round(progress)}%` : stateLabel);
   if (job.state === 'completed') state.prepend(icon('check'));
   top.append(title, state); body.append(top);
-  const detail = el('p', 'job-detail'); detail.append(el('span', 'provider', job.provider === 'reddit' ? 'Reddit' : 'X'), document.createTextNode(` · ${job.quality === 'best' ? 'Best available' : `Up to ${job.quality}p`} · ${job.bytes ? `${(job.bytes / 1048576).toFixed(1)} MB` : 'Local download'}`)); body.append(detail);
+  const detail = el('p', 'job-detail'); detail.append(el('span', 'provider', { reddit: 'Reddit', x: 'X', youtube: 'YouTube' }[job.provider]), document.createTextNode(` · ${job.quality === 'best' ? 'Best available' : `Up to ${job.quality}p`} · ${job.bytes ? `${(job.bytes / 1048576).toFixed(1)} MB` : 'Local download'}`)); body.append(detail);
   if (ACTIVE.has(job.state) && job.state !== 'queued') {
     const track = el('progress'); track.max = 100; track.setAttribute('aria-label', 'Download progress');
     if (job.state === 'downloading' && progress !== null) track.value = progress; body.append(track);
@@ -273,6 +273,7 @@ async function refresh() {
       if (page === 'options') {
         (document.querySelector('#inlineReddit') as HTMLInputElement).checked = latest.settings.inlineReddit;
         (document.querySelector('#inlineX') as HTMLInputElement).checked = latest.settings.inlineX;
+        (document.querySelector('#inlineYouTube') as HTMLInputElement).checked = latest.settings.inlineYouTube;
         (document.querySelector('#destination') as HTMLInputElement).value = latest.snapshot?.destination ?? '';
       }
       if (latest.notice) status(latest.notice);
