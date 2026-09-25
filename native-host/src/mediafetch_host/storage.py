@@ -92,9 +92,32 @@ def cleanup(root: str, job_id: str):
         return
     with staging(Path(root), job_id, create=False) as directory:
         for child in directory.iterdir():
-            delete_regular_file(child)
+            if child.name == ".runtime-cache":
+                cleanup_runtime_cache(child)
+            else:
+                delete_regular_file(child)
     # Never recurse. If a directory was swapped, rmdir cannot delete its contents.
     path.rmdir()
+
+
+def cleanup_runtime_cache(directory: Path):
+    """Remove only Deno's fixed analysis files and empty npm directory. Never recurse."""
+    allowed = {name + suffix for name in ("dep_analysis_cache_v2", "node_analysis_cache_v2") for suffix in ("", "-shm", "-wal")}
+    # The caller holds the job and all ancestor handles. This handle rejects
+    # reparse points and prevents the cache directory being replaced mid-cleanup.
+    with locked_directory(directory):
+        children = list(directory.iterdir())
+        if any(child.name not in allowed | {"npm"} for child in children):
+            raise OSError("Unrecognized runtime cache contents were preserved")
+        for child in children:
+            if child.name == "npm":
+                with locked_directory(child):
+                    if any(child.iterdir()):
+                        raise OSError("Unexpected npm cache contents were preserved")
+                child.rmdir()  # Empty directory only, including if its name raced.
+            else:
+                delete_regular_file(child)
+    directory.rmdir()
 
 
 def safe_filename(title: str, provider: str, content_id: str, suffix: str) -> str:

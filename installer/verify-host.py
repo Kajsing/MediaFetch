@@ -4,6 +4,7 @@ import json
 import struct
 import subprocess
 import uuid
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
 for name in ("python", "host", "config", "extension-id"):
@@ -20,4 +21,7 @@ assert reply["ok"] and reply["id"] == request["id"], "Handshake was rejected"
 assert reply["data"]["protocolVersion"] == 1, "Protocol version mismatch"
 snapshot = reply["data"]["snapshot"]
 assert snapshot["ffmpeg"] and snapshot["ytDlpVersion"], "A download dependency is missing"
-print(f"Handshake passed: helper {snapshot['helperVersion']}, yt-dlp {snapshot['ytDlpVersion']}, ffmpeg ready.")
+assert set(snapshot.get("providers", [])) == {"reddit", "x", "youtube"}, "The local YouTube runtime is missing or incompatible"
+runtime = subprocess.run([str(Path(args.python).parent / 'deno.exe'), '--version'], capture_output=True, text=True, timeout=15, creationflags=subprocess.CREATE_NO_WINDOW)
+assert runtime.returncode == 0 and runtime.stdout.startswith('deno 2.9.5 '), "The pinned YouTube runtime could not run"
+print(f"Handshake passed: helper {snapshot['helperVersion']}, yt-dlp {snapshot['ytDlpVersion']}, ffmpeg and YouTube runtime ready.")

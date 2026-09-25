@@ -38,7 +38,7 @@ try {
       ...(state === 'stopped' ? { resumedBytes: 1048576 } : {}),
     }));
     const f = globalThis.uiFixture = { jobs, initial: structuredClone(jobs), revision: 1, requests: [], listeners: [], disconnects: [], destination: 'C:\\Users\\Example\\Downloads\\VideoDownload' };
-    const snapshot = () => ({ jobs: structuredClone(f.jobs), revision: f.revision, destination: f.destination, ffmpeg: true, helperVersion: '0.1.0' });
+    const snapshot = () => ({ jobs: structuredClone(f.jobs), revision: f.revision, destination: f.destination, ffmpeg: true, helperVersion: '0.2.0', ...(f.providers ? { providers: f.providers } : {}) });
     f.publish = () => { f.revision++; f.listeners.forEach(listener => listener({ kind: 'snapshot', data: snapshot() })); };
     chrome.runtime.connectNative = () => {
       f.listeners = []; f.disconnects = [];
@@ -116,11 +116,13 @@ try {
   await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await page.getByLabel('Default quality', { exact: true }).selectOption('720');
   await page.getByLabel('Show Save video buttons on X').uncheck();
+  await page.getByLabel('Show Save video buttons on YouTube').uncheck();
   await page.getByRole('button', { name: 'Save preferences' }).click();
   await expect(page.getByRole('status')).toHaveText('Preferences saved.');
   await page.reload();
   await expect(page.getByLabel('Default quality', { exact: true })).toHaveValue('720');
   await expect(page.getByLabel('Show Save video buttons on X')).not.toBeChecked();
+  await expect(page.getByLabel('Show Save video buttons on YouTube')).not.toBeChecked();
   await page.getByLabel('Download folder', { exact: true }).fill('C:\\Fixture\\VideoDownload');
   await page.getByRole('button', { name: 'Set download folder', exact: true }).click();
   await expect(page.locator('#destination-display')).toHaveText('C:\\Fixture\\VideoDownload');
@@ -138,12 +140,22 @@ try {
   await page.locator('#app').screenshot({ path: path.join(output, 'popup.png') });
   await page.getByLabel('Post link', { exact: true }).fill('https://x.com.evil.test/user/status/123');
   await page.getByRole('button', { name: 'Download video', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Enter the permalink of a supported Reddit or X post.');
+  await expect(page.getByRole('status')).toHaveText('Enter a supported Reddit, X or YouTube video link.');
   await page.getByLabel('Post link', { exact: true }).fill('https://x.com/example/status/123');
   await page.getByRole('button', { name: 'Download video', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Added to your downloads.');
   assert.equal(await worker.evaluate(() => globalThis.uiFixture.requests.findLast(r => r.action === 'enqueue').quality), '720');
   checks.push('Compact popup caps recent jobs, keeps View all accessible, rejects an unsupported URL and queues with saved quality');
+  const beforeYouTube = await worker.evaluate(() => globalThis.uiFixture.requests.filter(r => r.action === 'enqueue').length);
+  await page.getByLabel('Post link', { exact: true }).fill('https://youtu.be/MkycQONC3SE?si=discard');
+  await page.getByRole('button', { name: 'Download video', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Update the local helper to install YouTube support, then reconnect.');
+  assert.equal(await worker.evaluate(() => globalThis.uiFixture.requests.filter(r => r.action === 'enqueue').length), beforeYouTube);
+  await worker.evaluate(() => { globalThis.uiFixture.providers = ['reddit', 'x', 'youtube']; globalThis.uiFixture.publish(); });
+  await page.getByRole('button', { name: 'Download video', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Added to your downloads.');
+  assert.equal(await worker.evaluate(() => globalThis.uiFixture.requests.findLast(r => r.action === 'enqueue').url), 'https://www.youtube.com/watch?v=MkycQONC3SE');
+  checks.push('Older helpers preserve Reddit/X operation and reject YouTube before enqueue; capable helpers accept the canonical single video');
 
   for (const width of [736, 360, 320]) {
     await page.setViewportSize({ width, height: 850 });

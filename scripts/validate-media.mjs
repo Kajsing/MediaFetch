@@ -7,9 +7,11 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
-const initial = JSON.parse(await readFile(path.join(root, 'artifacts/live-smoke.json'), 'utf8')).results;
-const recovery = JSON.parse(await readFile(path.join(root, 'artifacts/recovery-smoke.json'), 'utf8')).jobs;
+const youtube = process.argv.includes('--youtube');
+const initial = JSON.parse(await readFile(path.join(root, youtube ? 'artifacts/youtube-live.json' : 'artifacts/live-smoke.json'), 'utf8')).results;
+const recovery = youtube ? [] : JSON.parse(await readFile(path.join(root, 'artifacts/recovery-smoke.json'), 'utf8')).jobs;
 const videos = [...new Set([...initial, ...recovery].map(item => item.path).filter(Boolean))];
+assert.ok(videos.length, 'Acceptance evidence must contain saved videos');
 const evidence = [];
 for (const file of videos) {
   const probe = spawnSync(process.env.MEDIAFETCH_FFPROBE || 'ffprobe', ['-v', 'error', '-show_entries', 'format=duration,size:stream=codec_name,codec_type,width,height,sample_rate,channels', '-of', 'json', file], { encoding: 'utf8' });
@@ -63,12 +65,13 @@ try {
       video.pause();
       const result = { duration: video.duration, currentTime: video.currentTime, width: video.videoWidth, height: video.videoHeight, audioRms: maximumRms, decodedFrames: video.getVideoPlaybackQuality().totalVideoFrames, mediaError: video.error?.code ?? null };
       source.disconnect(); analyser.disconnect(); await audioContext.close();
-      video.remove(); document.body.append(document.createElement('video'));
       return result;
     }, index);
     assert.ok(playback.currentTime > 9 && playback.decodedFrames > 0 && playback.audioRms > 0.0001 && !playback.mediaError, 'Chrome must decode video and non-silent audio');
     evidence[index].chromePlayback = playback;
+    if (youtube) await page.screenshot({ path: path.join(root, `artifacts/youtube-playback-${index}.png`) });
+    await page.evaluate(() => { document.querySelector('video').remove(); document.body.append(document.createElement('video')); });
   }
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
-await writeFile(path.join(root, 'artifacts/media-validation.json'), JSON.stringify(evidence, null, 2));
+await writeFile(path.join(root, youtube ? 'artifacts/youtube-media-validation.json' : 'artifacts/media-validation.json'), JSON.stringify(evidence, null, 2));
 console.log(JSON.stringify(evidence, null, 2));

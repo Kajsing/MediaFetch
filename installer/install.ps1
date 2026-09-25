@@ -42,7 +42,7 @@ if (Test-Path -LiteralPath $taskLockPath) {
 & $PythonPath -m venv $taskVenv
 if ($LASTEXITCODE -ne 0) { throw 'Could not create the helper Python environment.' }
 $taskPython = Join-Path $taskVenv 'Scripts\python.exe'
-& $taskPython -m pip install --disable-pip-version-check -r (Join-Path $taskRepository 'native-host\requirements.txt')
+& $taskPython -m pip install --disable-pip-version-check --only-binary=:all: -r (Join-Path $taskRepository 'native-host\requirements.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Could not install the pinned download dependency.' }
 New-Item -ItemType Directory -Path $taskApp -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $taskRepository 'native-host\host.py') -Destination $taskApp -Force

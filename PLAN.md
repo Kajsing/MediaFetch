@@ -9,7 +9,7 @@ Post-MVP presentation update: the owner selected A — Slate on 2026-09-25. Exte
 
 Build the Chrome extension described in the [feasibility study](mediafetch_chrome_extension_forundersoegelse.md), incorporating the user's subsequent decisions about destination, recovery, and deletion.
 
-Use TypeScript for the Manifest V3 extension and Python 3.12+ for the local Native Messaging helper. Use yt-dlp for extraction and ffmpeg for merging. Begin with private/unpacked installation on Windows 11, Reddit first, then X. Keep YouTube disabled and leave MCP/ChatGPT integration outside current work.
+Use TypeScript for the Manifest V3 extension and Python 3.12+ for the local Native Messaging helper. Use yt-dlp for extraction and ffmpeg for merging. Begin with private/unpacked installation on Windows 11, Reddit first, then X. The initial MVP left YouTube disabled; the owner subsequently authorized the milestone below. MCP/ChatGPT integration remains outside current work.
 
 Keep the hybrid architecture. Prove the native path first; enable a browser direct-download path only for complete media and only when it meets the same destination, recovery, and cleanup requirements. Do not claim browser-path support before those requirements have been tested.
 
@@ -150,7 +150,21 @@ Run the full acceptance matrix below, resolve findings, finish installation/trou
 
 Exit: all required acceptance checks pass, or a concrete remaining blocker is reported. Documentation must distinguish automated evidence from actual Windows/Chrome/live-provider checks.
 
-YouTube and MCP/ChatGPT integration require separate future scope; do not add placeholder implementations now.
+MCP/ChatGPT integration requires separate future scope; do not add placeholder implementations now.
+
+### Y1 — Public YouTube single-video support (authorized 2026-09-25)
+
+Status: complete for the scoped 0.2.0 single-video workflow. Implementation, isolated native/browser acceptance and audiovisual checks passed. The owner disabled the active extension; helper installation and verification then passed without changing the journal. After enabling/reloading it, the owner confirmed the correct YouTube button and download/playback with sound in normal Chrome. Exact evidence and remaining coverage limits are in DOCUMENTATION.md.
+
+Accept exact HTTPS YouTube watch, youtu.be and Shorts links; normalize to one video ID and discard playlist/time/tracking context. Exclude playlist/channel downloads, ongoing/upcoming live streams, authenticated access and DRM. Add the provider to the existing helper path, quality choices, history and controls. Keep the private/unpacked distribution model.
+
+Use the pinned yt-dlp YouTube extractor, its matching local EJS package and a pinned Deno runtime in the helper environment. Use restricted Deno execution; disable runtime component downloads, ambient configuration, plugins and browser credential import. Keep the scheduler, staging ownership and process-tree boundary. Extend only the provider's explicit HTTPS network/media allowlist, validating redirects before requests. Do not enable external media downloaders that evade that boundary.
+
+Add native provider capability reporting so an old or incomplete helper gives a useful update message. Preserve old settings during migration. Provide a YouTube inline toggle and conservative controls on the current watch page/active Short; explicit links and paste/context-menu entry points may identify other single videos without guessing neighbors. Handle SPA navigation and advertisements without binding a button to unrelated media.
+
+Validation: exact URL and CDN boundaries, single-video/no-live policy, settings migration, helper capability admission, real content fixtures for watch/Shorts navigation, existing Reddit/X regressions, runtime restrictions and Windows process ownership. Use an isolated state directory for real native acceptance; download the owner-selected `MkycQONC3SE` video, verify streams, full decode and playback with sound, and exercise Stop/Continue/delete on YouTube when available. Network/provider refusals are reported honestly and are not worked around through credentials or access-control bypasses. Update the installed helper only after source checks and the installer confirms it is inactive; preserve the user's Chrome and downloads.
+
+Exit: the complete single-video slice is built and verified, or the exact provider/environment blocker and remaining acceptance are recorded. No universal YouTube compatibility claim.
 
 ## 7. Required acceptance evidence
 
@@ -173,7 +187,7 @@ YouTube and MCP/ChatGPT integration require separate future scope; do not add pl
 | Malformed messages / unsafe paths / inherited yt-dlp config | Requests fail safely and cannot alter command or path policy |
 | Direct engine stop/resume/delete | Real Chrome behavior satisfies the same user contract, or helper is selected |
 | Helper/ffmpeg missing; disk full; access denied | Accurate error and practical recovery action |
-| YouTube disabled | No enabled YouTube download entry point or permission |
+| YouTube initial MVP / Y1 | Initially disabled; Y1 adds only the explicitly scoped single-video helper path |
 
 After each substantial milestone, update `DOCUMENTATION.md` with changed files, validation results, assumptions, deviations, remaining work, and whether the next planned step can proceed autonomously. Add concise implementation logs when complex work begins or a project log directory exists.
 

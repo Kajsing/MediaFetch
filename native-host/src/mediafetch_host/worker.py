@@ -7,6 +7,7 @@ from pathlib import Path
 from .errors import MediaFetchError, classify_error
 from .providers import canonical, media_url_allowed
 from .network import downloader_class
+from .youtube import runtime_options, validate_video
 
 
 def emit(value: dict):
@@ -49,7 +50,7 @@ def run(spec: dict):
     import yt_dlp.globals
     yt_dlp.globals.plugin_dirs.value = []
     candidate = canonical(spec["url"])
-    YoutubeDL = downloader_class(candidate["provider"], lambda count: emit({"type": "resume", "bytes": count}), lambda: emit({"type": "restart"}))
+    YoutubeDL = downloader_class(candidate["provider"], (lambda count: emit({"type": "resume", "bytes": count})) if spec.get("resume") else None, (lambda: emit({"type": "restart"})) if spec.get("resume") else None)
     folder = Path(spec["staging"])
     quality = spec["quality"]
     last_progress = 0.0
@@ -67,7 +68,8 @@ def run(spec: dict):
             emit({"type": "merging"})
     params = {
         "quiet": True, "no_warnings": True, "noprogress": True, "logger": QuietLogger(),
-        "noplaylist": True, "playlistend": 17, "allowed_extractors": ["reddit", "twitter", "twitter:card", "twitter:amplify"],
+        "noplaylist": True, "playlistend": 17,
+        "allowed_extractors": ["youtube$"] if candidate["provider"] == "youtube" else ["reddit", "twitter", "twitter:card", "twitter:amplify"],
         "format": format_selector(quality), "merge_output_format": "mp4", "format_sort": ["res", "vcodec:h264", "acodec:aac"],
         "outtmpl": str(folder / "media.%(ext)s"), "paths": {"home": str(folder), "temp": str(folder)},
         "continuedl": True, "nopart": False, "windowsfilenames": True,
@@ -78,10 +80,24 @@ def run(spec: dict):
         "proxy": "", "usenetrc": False, "cookiefile": None, "cookiesfrombrowser": None,
         "writeinfojson": False, "writethumbnail": False, "writesubtitles": False,
     }
+    if candidate["provider"] == "youtube":
+        params.update(runtime_options(folder))
+        params.update(external_downloader="native", hls_prefer_native=True)
+        # Reject an ongoing stream before format selection or any media transfer.
+        def single_video_filter(info, *, incomplete=False):
+            if incomplete:
+                if info.get("is_live") or info.get("live_status") in {"is_live", "is_upcoming", "post_live"}:
+                    raise MediaFetchError("LIVE_UNSUPPORTED", "Live YouTube streams are not supported. Wait for the finished recording.")
+            else:
+                validate_video(info, candidate["contentId"])
+            return None
+        params["match_filter"] = single_video_filter
     with YoutubeDL(params) as downloader:
         info = extract_public_info(downloader, candidate, params, YoutubeDL)
         if not info:
             raise MediaFetchError("NO_MEDIA", "No supported video was found.")
+        if candidate["provider"] == "youtube":
+            validate_video(info, candidate["contentId"])
         if info.get("_type") in ("playlist", "multi_video") or "entries" in info:
             entries = [entry for entry in itertools.islice(info.get("entries") or [], 17) if entry]
             index = spec.get("mediaIndex")
@@ -101,6 +117,9 @@ def run(spec: dict):
         for item in requested:
             if not media_url_allowed(item.get("url", ""), candidate["provider"]):
                 raise MediaFetchError("UNSUPPORTED_MEDIA", "The video is hosted outside this provider's supported media servers.")
+            if candidate["provider"] == "youtube":
+                if item.get("has_drm") or item.get("protocol") not in {"https", "http_dash_segments", "m3u8_native"}:
+                    raise MediaFetchError("UNSUPPORTED_MEDIA", "This YouTube format cannot use the controlled local downloader.")
         fingerprint = identity(info)
         expected = spec.get("resumeData")
         if expected and expected != fingerprint:

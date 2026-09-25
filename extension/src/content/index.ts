@@ -2,13 +2,15 @@ import { providerFor } from '../shared/providers.ts';
 import { DEFAULT_SETTINGS, type Candidate, type Settings } from '../shared/contracts.ts';
 import { REDDIT_POSTS, redditCandidate } from '../providers/reddit/adapter.ts';
 import { X_POSTS, xCandidate, xControlAnchor, xHasDownloadableVideo } from '../providers/x/adapter.ts';
+import { YOUTUBE_POSTS, youtubeCandidate, youtubeControlAnchor } from '../providers/youtube/adapter.ts';
 
 let settings: Settings = DEFAULT_SETTINGS;
 let contextTarget: Element | null = null;
 let contextTime = 0;
 const hosts = new Map<Element, { host: HTMLElement; identity: string }>();
 function candidate(target: Element): Candidate | null {
-  return providerFor(location.href) === 'reddit' ? redditCandidate(target, location.href) : xCandidate(target, location.href);
+  const provider = providerFor(location.href);
+  return provider === 'reddit' ? redditCandidate(target, location.href) : provider === 'x' ? xCandidate(target, location.href) : provider === 'youtube' ? youtubeCandidate(target, location.href) : null;
 }
 document.addEventListener('contextmenu', event => {
   contextTarget = event.target instanceof Element ? event.target : null;
@@ -25,12 +27,12 @@ async function refreshSettings() {
 chrome.storage.onChanged.addListener(changes => { if (changes.settings) { void refreshSettings().then(() => scan(document)); } });
 function scan(scope: ParentNode) {
   const provider = providerFor(location.href);
-  const enabled = provider === 'reddit' ? settings.inlineReddit : settings.inlineX;
+  const enabled = provider === 'reddit' ? settings.inlineReddit : provider === 'youtube' ? settings.inlineYouTube : settings.inlineX;
   for (const [post, entry] of hosts) {
-    if (!post.isConnected || !enabled) { entry.host.remove(); hosts.delete(post); }
+    if (!post.isConnected || !enabled || (provider === 'youtube' && candidate(post)?.url !== entry.identity)) { entry.host.remove(); hosts.delete(post); }
   }
   if (!enabled || !provider) return;
-  const selector = provider === 'reddit' ? REDDIT_POSTS : X_POSTS;
+  const selector = provider === 'reddit' ? REDDIT_POSTS : provider === 'youtube' ? YOUTUBE_POSTS : X_POSTS;
   const posts = [...scope.querySelectorAll(selector)];
   if (scope instanceof Element && scope.matches(selector)) posts.unshift(scope);
   for (const post of posts) {
@@ -40,10 +42,10 @@ function scan(scope: ParentNode) {
       if (old) { old.host.remove(); hosts.delete(post); }
       continue;
     }
-    const anchor = provider === 'x' ? xControlAnchor(post) : null;
-    if (provider === 'x' && !anchor) {
+    const anchor = provider === 'x' ? xControlAnchor(post) : provider === 'youtube' ? youtubeControlAnchor(post) : null;
+    if ((provider === 'x' || provider === 'youtube') && !anchor) {
       if (old) { old.host.remove(); hosts.delete(post); }
-      continue; // Wait for a recognized action row rather than changing X's layout.
+      continue; // Wait for a recognized placement anchor.
     }
     if (old && (old.identity !== found?.url || !old.host.isConnected)) { old.host.remove(); hosts.delete(post); }
     if (!found) continue;
@@ -59,12 +61,12 @@ function scan(scope: ParentNode) {
     const style = document.createElement('style');
     style.textContent = `:host{display:inline-flex;flex:0 0 auto;align-self:flex-start;align-items:center;width:max-content;max-width:100%;height:auto;margin:${provider === 'x' ? '8px 0 4px' : '6px 10px'}}button{box-sizing:border-box;height:32px;white-space:nowrap;line-height:18px;font:500 12px system-ui;color:#c4bdff;background:#2b2840;border:1px solid #55506d;border-radius:7px;padding:6px 11px;cursor:pointer}button:hover{background:#393451}button:focus-visible{outline:2px solid #aba3ff;outline-offset:2px}button:disabled{opacity:.7;cursor:wait}`;
     const button = document.createElement('button'); button.type = 'button';
-    button.textContent = '↓ Save video'; button.title = 'Download this post with MediaFetch';
+    button.textContent = '↓ Save video'; button.title = 'Download this video with MediaFetch';
     button.addEventListener('click', async event => {
       event.preventDefault(); event.stopPropagation();
       const current = candidate(post);
       if (provider === 'x' && !xHasDownloadableVideo(post)) { host.remove(); hosts.delete(post); return; }
-      if (!current || current.url !== hosts.get(post)?.identity) { button.textContent = 'Open post first'; return; }
+      if (!current || current.url !== hosts.get(post)?.identity) { host.remove(); hosts.delete(post); scan(document); return; }
       button.disabled = true; button.textContent = 'Adding…';
       try {
         const result = await chrome.runtime.sendMessage({ type: 'enqueue', url: current.url });
@@ -84,7 +86,7 @@ const observer = new MutationObserver(records => {
   for (const record of records) {
     const changed = record.target instanceof Element ? record.target : record.target.parentElement;
     if (changed && !changed.closest('.mediafetch-control')) {
-      const post = changed.closest(REDDIT_POSTS + ',' + X_POSTS);
+      const post = changed.closest(REDDIT_POSTS + ',' + X_POSTS + ',' + YOUTUBE_POSTS);
       if (post) pending.add(post);
     }
     for (const node of record.addedNodes) if (node instanceof Element && !node.matches('.mediafetch-control')) pending.add(node);
@@ -94,4 +96,10 @@ const observer = new MutationObserver(records => {
     for (const node of nodes) if (node.isConnected) scan(node);
   }, 250);
 });
-void refreshSettings().then(() => { scan(document); observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'permalink', 'data-permalink', 'post-type', 'aria-label'] }); });
+for (const event of ['yt-navigate-start', 'yt-navigate-finish', 'yt-page-data-updated', 'popstate']) {
+  window.addEventListener(event, () => {
+    if (event === 'yt-navigate-start') { for (const entry of hosts.values()) entry.host.remove(); hosts.clear(); }
+    else scan(document);
+  });
+}
+void refreshSettings().then(() => { scan(document); observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'permalink', 'data-permalink', 'post-type', 'aria-label', 'video-id', 'is-active', 'hidden', 'aria-hidden', 'class'] }); });

@@ -11,6 +11,7 @@ from .errors import MediaFetchError, classify_error
 from .providers import canonical
 from .storage import Journal, staging, cleanup, has_partials, safe_root, safe_filename, publish, downloads_folder
 from .windows import JobObject
+from .youtube import runtime_path
 
 ACTIVE = {"queued", "resolving", "downloading", "merging", "stopping", "deleting"}
 PUBLIC_FIELDS = {"id", "attemptId", "revision", "provider", "url", "title", "quality", "state", "progress", "createdAt", "updatedAt", "bytes", "error", "errorCode", "path", "resumable", "hasPartials", "mediaCount", "mediaIndex", "resumedBytes", "resumeRestarted"}
@@ -52,7 +53,7 @@ class Scheduler:
         except importlib.metadata.PackageNotFoundError:
             version = None
         ffmpeg = self.config.get("ffmpeg")
-        return {"ytDlpVersion": version, "ffmpeg": bool(ffmpeg and Path(ffmpeg).is_absolute() and Path(ffmpeg).is_file()), "helperVersion": __version__}
+        return {"ytDlpVersion": version, "ffmpeg": bool(ffmpeg and Path(ffmpeg).is_absolute() and Path(ffmpeg).is_file()), "helperVersion": __version__, "providers": ["reddit", "x", *(["youtube"] if runtime_path() else [])]}
 
     def snapshot(self):
         with self.lock:
@@ -91,6 +92,8 @@ class Scheduler:
                 raise MediaFetchError("YTDLP_NOT_FOUND", "Reinstall the helper to restore yt-dlp.")
             if not self.capabilities["ffmpeg"]:
                 raise MediaFetchError("FFMPEG_NOT_FOUND", "Install ffmpeg and run the helper installer again.")
+            if candidate["provider"] not in self.capabilities["providers"]:
+                raise MediaFetchError("YOUTUBE_RUNTIME_MISSING", "Update the local helper to install YouTube support, then reconnect.")
             if len(self.journal.data["jobs"]) >= 200:
                 raise MediaFetchError("QUEUE_FULL", "Remove old finished downloads before adding more.")
             media_index = request.get("mediaIndex") or candidate["mediaIndex"]
