@@ -1,0 +1,293 @@
+<div id="mf-design-board" aria-label="MediaFetch design exploration">
+  <div class="mf-review-bar">
+    <div class="mf-directions" role="group" aria-label="Design direction">
+      <button type="button" class="cursor-interaction" data-direction="slate" aria-pressed="true"><span>A</span> Slate</button>
+      <button type="button" class="cursor-interaction" data-direction="canvas" aria-pressed="false"><span>B</span> Canvas</button>
+      <button type="button" class="cursor-interaction" data-direction="signal" aria-pressed="false"><span>C</span> Signal</button>
+      <button type="button" class="cursor-interaction" data-direction="archive" aria-pressed="false"><span>D</span> Archive</button>
+    </div>
+    <label class="mf-view-label">View <select class="cursor-interaction" aria-label="Preview surface"><option value="downloads">Download list</option><option value="popup">Popup + inline button</option></select></label>
+  </div>
+  <div class="mf-direction-caption"><span id="mf-direction-description">Quiet precision · cool graphite · compact workspace</span><span class="mf-sample-label">INTERACTIVE MOCKUP</span></div>
+  <div id="mf-product-preview" data-design="slate" aria-label="MediaFetch interface concept"></div>
+  <div class="mf-demo-footer"><span id="mf-demo-status" role="status">Sample jobs · no real downloads or files are affected</span><button type="button" class="cursor-interaction mf-reset">Reset sample</button></div>
+</div>
+<style>
+#mf-design-board{font:14px/1.45 'Segoe UI',Arial,sans-serif;--review-ink:light-dark(#353842,#d7d8df);--review-muted:light-dark(#656a78,#a8aab5);--review-line:light-dark(#d9dbe1,#3c3d47);--review-active:light-dark(#e9eaf0,#2a2b34);color:var(--review-ink);width:100%}
+#mf-design-board *{box-sizing:border-box}
+#mf-design-board button,#mf-design-board input,#mf-design-board select{font:inherit}
+#mf-design-board button:disabled{opacity:.45;cursor:default}
+#mf-design-board .mf-review-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+#mf-design-board .mf-directions{display:flex;gap:5px;flex-wrap:wrap}
+#mf-design-board .mf-directions button{border:1px solid transparent;background:transparent;color:var(--review-muted);border-radius:7px;padding:8px 10px;font-size:13px}
+#mf-design-board .mf-directions button span{font-size:11px;margin-right:5px;opacity:.7}
+#mf-design-board .mf-directions button[aria-pressed=true]{background:var(--review-active);border-color:var(--review-line);color:var(--review-ink)}
+#mf-design-board .mf-view-label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--review-muted)}
+#mf-design-board .mf-view-label select{border:1px solid var(--review-line);background:transparent;color:var(--review-ink);border-radius:6px;padding:7px 9px;max-width:210px}
+#mf-design-board .mf-direction-caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--review-muted);margin:0 0 12px}
+#mf-design-board .mf-sample-label{font:11px/1.6 Consolas,monospace;letter-spacing:1.2px}
+#mf-design-board .mf-demo-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:12px;color:var(--review-muted);font-size:11px}
+#mf-design-board .mf-reset{font-size:11px;color:var(--review-ink);border:0;background:transparent;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+#mf-product-preview{--mf-bg:#16171c;--mf-panel:#1c1d24;--mf-rail:#111217;--mf-ink:#eeedf4;--mf-muted:#9e9faa;--mf-line:#30313b;--mf-accent:#aba3ff;--mf-on-accent:#171328;--mf-accent-soft:#2b2840;--mf-ok:#91c9ae;--mf-warn:#e5ba8e;--mf-warn-bg:#2b2420;--mf-radius:9px;--mf-row:14px;--mf-density:0px;color:var(--mf-ink);font:13px/1.45 'Segoe UI',Arial,sans-serif}
+#mf-product-preview[data-design=canvas]{--mf-bg:#ffffff;--mf-panel:#f6f7f9;--mf-rail:#f0f2f5;--mf-ink:#202733;--mf-muted:#66707e;--mf-line:#e0e4e9;--mf-accent:#175dcc;--mf-on-accent:#ffffff;--mf-accent-soft:#eaf1ff;--mf-ok:#217858;--mf-warn:#985411;--mf-warn-bg:#fff8ee;--mf-radius:10px;--mf-row:18px;color-scheme:light}
+#mf-product-preview[data-design=signal]{--mf-bg:#141615;--mf-panel:#1d211e;--mf-rail:#0d100e;--mf-ink:#f2f5ed;--mf-muted:#a1afa4;--mf-line:#374238;--mf-accent:#d6f76c;--mf-on-accent:#1b240c;--mf-accent-soft:#29311b;--mf-ok:#c1d992;--mf-warn:#ffd09e;--mf-warn-bg:#332a20;--mf-radius:2px;--mf-row:12px;color-scheme:dark}
+#mf-product-preview[data-design=archive]{--mf-bg:#faf7f1;--mf-panel:#f0ebe2;--mf-rail:#ede6da;--mf-ink:#352f2a;--mf-muted:#726456;--mf-line:#dcd2c3;--mf-accent:#a54129;--mf-on-accent:#fff8ed;--mf-accent-soft:#f2e2d6;--mf-ok:#526840;--mf-warn:#984c22;--mf-warn-bg:#f5e9dc;--mf-radius:4px;--mf-row:19px;color-scheme:light}
+#mf-product-preview[data-design=slate]{color-scheme:dark}
+#mf-product-preview button,#mf-product-preview select,#mf-product-preview input{border-radius:var(--mf-radius);color:var(--mf-ink)}
+#mf-product-preview button{border:0;background:transparent;padding:7px 10px;white-space:nowrap}
+#mf-product-preview button:hover{background:var(--mf-accent-soft)}
+#mf-product-preview .mf-icon{width:16px;height:16px;flex-shrink:0}
+#mf-product-preview .mf-app{border:1px solid var(--mf-line);border-radius:12px;overflow:hidden;background:var(--mf-bg);min-height:594px}
+#mf-product-preview .mf-app-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid var(--mf-line)}
+#mf-product-preview .mf-brand{display:flex;align-items:center;gap:9px;letter-spacing:-.5px;font-weight:650;font-size:17px}
+#mf-product-preview .mf-brand-symbol{display:grid;place-items:center;background:var(--mf-accent);color:var(--mf-on-accent);border-radius:6px;width:26px;height:26px}
+#mf-product-preview .mf-brand-symbol .mf-icon{width:17px;height:17px}
+#mf-product-preview .mf-connected{display:flex;gap:7px;align-items:center;font-size:11px;color:var(--mf-muted);white-space:nowrap}
+#mf-product-preview .mf-connected:before{content:'';display:block;background:var(--mf-ok);width:6px;height:6px;border-radius:50%}
+#mf-product-preview .mf-layout{display:flex;min-height:535px}
+#mf-product-preview .mf-sidebar{width:158px;flex-shrink:0;background:var(--mf-rail);padding:20px 12px;display:flex;flex-direction:column;gap:5px;border-right:1px solid var(--mf-line)}
+#mf-product-preview .mf-sidebar button{display:flex;align-items:center;gap:9px;text-align:left;font-size:12px;padding:9px 10px;color:var(--mf-muted)}
+#mf-product-preview .mf-sidebar button.mf-nav-current{background:var(--mf-panel);color:var(--mf-ink)}
+#mf-product-preview .mf-sidebar .mf-sidebar-label{font-size:11px;letter-spacing:1.3px;color:var(--mf-muted);padding:2px 10px 12px}
+#mf-product-preview .mf-sidebar small{margin-top:auto;padding:16px 10px 0;line-height:1.6;color:var(--mf-muted);font-size:11px}
+#mf-product-preview .mf-main{padding:24px 28px 18px;flex:1;min-width:0}
+#mf-product-preview h2,#mf-product-preview h3,#mf-product-preview p{margin:0}
+#mf-product-preview .mf-title-row{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:22px}
+#mf-product-preview h2{font-size:23px;line-height:1.15;letter-spacing:-.65px;font-weight:600;color:var(--mf-ink)}
+#mf-product-preview .mf-subtitle{font-size:11px;color:var(--mf-muted);margin-top:6px}
+#mf-product-preview .mf-toolbar{display:flex;align-items:center;gap:6px}
+#mf-product-preview .mf-toolbar button{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--mf-muted)}
+#mf-product-preview .mf-entry{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--mf-line);background:var(--mf-panel);border-radius:var(--mf-radius);margin-bottom:24px}
+#mf-product-preview .mf-entry>label{display:flex;gap:8px;align-items:center;flex:1;min-width:0;padding-left:6px;color:var(--mf-muted)}
+#mf-product-preview input{min-width:0;width:100%;background:transparent;border:0;outline-offset:3px;padding:4px 0;font-size:12px!important}
+#mf-product-preview input::placeholder{color:var(--mf-muted);opacity:1}
+#mf-product-preview select{max-width:160px;padding:7px 8px;background:var(--mf-bg);border:1px solid var(--mf-line);font-size:11px!important}
+#mf-product-preview .mf-primary{background:var(--mf-accent);color:var(--mf-on-accent);font-size:12px;font-weight:600;padding:8px 13px;display:inline-flex;justify-content:center;align-items:center;gap:6px}
+#mf-product-preview .mf-primary:hover{background:var(--mf-accent);filter:brightness(1.08)}
+#mf-product-preview .mf-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;text-transform:uppercase;letter-spacing:1.3px;color:var(--mf-muted);padding:0 0 7px;border-bottom:1px solid var(--mf-line);margin-top:20px}
+#mf-product-preview .mf-group-head span:last-child{letter-spacing:0;font-size:11px;text-transform:none}
+#mf-product-preview .mf-job{display:flex;gap:12px;padding:calc(var(--mf-row) + var(--mf-density)) 0;border-bottom:1px solid var(--mf-line);align-items:flex-start;min-width:0}
+#mf-product-preview .mf-file-mark{display:grid;place-items:center;flex:0 0 33px;height:38px;background:var(--mf-panel);color:var(--mf-muted);border-radius:5px;font-size:11px;font-family:Consolas,monospace}
+#mf-product-preview .mf-file-mark.is-active{background:var(--mf-accent-soft);color:var(--mf-accent)}
+#mf-product-preview .mf-job-body{flex:1;min-width:0}
+#mf-product-preview .mf-job-line{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;min-width:0}
+#mf-product-preview .mf-job-name{font-weight:500;font-size:13px;line-height:1.4;overflow-wrap:anywhere;min-width:0}
+#mf-product-preview .mf-job-status{font-size:11px;color:var(--mf-muted);white-space:nowrap;display:flex;align-items:center;gap:4px}
+#mf-product-preview .mf-job-status.status-active{color:var(--mf-accent)}
+#mf-product-preview .mf-job-status.status-complete{color:var(--mf-ok)}
+#mf-product-preview .mf-job-status.status-failed{color:var(--mf-warn)}
+#mf-product-preview .mf-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;color:var(--mf-muted);font-size:11px;margin-top:4px}
+#mf-product-preview .mf-source{font-size:11px;font-weight:600;color:var(--mf-muted)}
+#mf-product-preview .mf-actions{display:flex;gap:3px;flex-wrap:wrap;margin-top:7px;align-items:center}
+#mf-product-preview .mf-actions button{font-size:11px;color:var(--mf-muted);padding:3px 7px;min-height:24px}
+#mf-product-preview .mf-actions button:first-child{color:var(--mf-ink);background:var(--mf-panel)}
+#mf-product-preview .mf-actions button[data-job-action=delete]{color:var(--mf-muted)}
+#mf-product-preview .mf-progress{height:3px;background:var(--mf-line);border-radius:3px;margin-top:11px;overflow:hidden}
+#mf-product-preview .mf-progress>span{display:block;height:100%;background:var(--mf-accent);width:48%}
+#mf-product-preview .mf-error{font-size:11px;line-height:1.5;color:var(--mf-warn);margin-top:6px}
+#mf-product-preview .mf-destination{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--mf-muted);font-size:11px;margin-top:23px}
+#mf-product-preview .mf-destination>span{display:flex;align-items:center;gap:6px}
+#mf-product-preview .mf-destination .mf-icon{width:13px;height:13px}
+#mf-product-preview .mf-empty{padding:35px 10px;text-align:center;color:var(--mf-muted);font-size:12px}
+#mf-product-preview .mf-settings{padding:16px;background:var(--mf-panel);border:1px solid var(--mf-line);border-radius:var(--mf-radius);margin-bottom:20px}
+#mf-product-preview .mf-settings label{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:12px 0;font-size:12px}
+#mf-product-preview .mf-settings input[type=checkbox]{width:15px;accent-color:var(--mf-accent)}
+#mf-product-preview .mf-settings-head{display:flex;align-items:center;justify-content:space-between;font-size:14px}
+#mf-product-preview .mf-popups{display:grid;grid-template-columns:minmax(300px,408px) minmax(250px,1fr);gap:28px;align-items:start;padding:10px 0}
+#mf-product-preview .mf-popup{background:var(--mf-bg);border:1px solid var(--mf-line);border-radius:12px;overflow:hidden;width:100%;max-width:408px}
+#mf-product-preview .mf-popup .mf-app-top{padding:17px 18px}
+#mf-product-preview .mf-popup .mf-main{padding:19px 18px}
+#mf-product-preview .mf-popup h2{font-size:20px}
+#mf-product-preview .mf-popup .mf-title-row{margin-bottom:17px}
+#mf-product-preview .mf-popup .mf-entry{flex-wrap:wrap;margin-bottom:20px;padding:12px;gap:11px}
+#mf-product-preview .mf-popup .mf-entry>label{flex-basis:100%;padding:0 0 9px;border-bottom:1px solid var(--mf-line)}
+#mf-product-preview .mf-popup .mf-entry select{flex:1;max-width:none}
+#mf-product-preview .mf-popup .mf-entry .mf-primary{flex:1}
+#mf-product-preview .mf-popup .mf-job{gap:10px}
+#mf-product-preview .mf-popup .mf-file-mark{flex-basis:26px;height:30px}
+#mf-product-preview .mf-popup .mf-job-name{font-size:12px}
+#mf-product-preview .mf-popup .mf-job-status{font-size:11px}
+#mf-product-preview .mf-popup-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--mf-line);padding:12px 17px;font-size:11px;color:var(--mf-muted)}
+#mf-product-preview .mf-popup-foot button{font-size:11px;color:var(--mf-accent)}
+#mf-product-preview .mf-inline-specimen{padding:23px;background:var(--mf-bg);border:1px solid var(--mf-line);border-radius:12px;color:var(--mf-ink)}
+#mf-product-preview .mf-spec-label{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mf-muted);margin-bottom:22px}
+#mf-product-preview .mf-post-header{display:flex;gap:10px;align-items:center;font-size:12px}
+#mf-product-preview .mf-avatar{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;background:var(--mf-panel);color:var(--mf-muted);font-weight:600;font-size:11px}
+#mf-product-preview .mf-post-header small{display:block;font-size:11px;color:var(--mf-muted)}
+#mf-product-preview .mf-post-caption{margin-top:15px;font-size:13px}
+#mf-product-preview .mf-video-surface{display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;background:var(--mf-panel);margin:14px 0;color:var(--mf-muted);border-radius:8px}
+#mf-product-preview .mf-video-surface .mf-icon{width:26px;height:26px}
+#mf-product-preview .mf-social-actions{display:flex;justify-content:space-between;color:var(--mf-muted);padding:5px 0 13px;border-bottom:1px solid var(--mf-line)}
+#mf-product-preview .mf-inline-button{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:7px 11px;margin-top:12px;border:1px solid var(--mf-line);height:32px;color:var(--mf-accent);background:var(--mf-accent-soft)}
+#mf-product-preview .mf-inline-button .mf-icon{width:13px;height:13px}
+#mf-product-preview .mf-inline-note{font-size:11px;color:var(--mf-muted);margin-top:18px}
+#mf-product-preview[data-design=canvas] .mf-sidebar{display:none}
+#mf-product-preview[data-design=canvas] .mf-main{padding:25px 30px}
+#mf-product-preview[data-design=canvas] .mf-app-top{background:var(--mf-panel);padding:19px 28px}
+#mf-product-preview[data-design=canvas] .mf-entry{padding:13px;background:var(--mf-bg);box-shadow:0 2px 8px #16243c06}
+#mf-product-preview[data-design=canvas] .mf-title-row h2{font-weight:600;font-size:27px}
+#mf-product-preview[data-design=canvas] .mf-group-head{font-size:12px;letter-spacing:0;text-transform:none;border:0;padding-bottom:4px;color:var(--mf-ink)}
+#mf-product-preview[data-design=canvas] .mf-file-mark{height:42px;flex-basis:40px;border-radius:9px}
+#mf-product-preview[data-design=canvas] .mf-actions{justify-content:flex-end;margin-top:4px}
+#mf-product-preview[data-design=canvas] .mf-job-name{font-size:14px}
+#mf-product-preview[data-design=canvas] .mf-popup .mf-main{padding:19px}
+#mf-product-preview[data-design=canvas] .mf-popup .mf-app-top{padding:17px 19px}
+#mf-product-preview[data-design=canvas] .mf-popup .mf-actions{justify-content:flex-start}
+#mf-product-preview[data-design=canvas] .mf-popup .mf-title-row h2{font-size:23px}
+#mf-product-preview[data-design=canvas] .mf-popup .mf-file-mark{flex-basis:30px;height:35px}
+#mf-product-preview[data-design=signal] .mf-app,#mf-product-preview[data-design=signal] .mf-popup,#mf-product-preview[data-design=signal] .mf-inline-specimen{border-radius:2px}
+#mf-product-preview[data-design=signal] .mf-app-top{border-top:3px solid var(--mf-accent);background:var(--mf-rail);padding:15px 22px}
+#mf-product-preview[data-design=signal] .mf-brand{font-family:Consolas,monospace;font-size:16px;text-transform:uppercase;letter-spacing:1px}
+#mf-product-preview[data-design=signal] .mf-brand-symbol{background:transparent;color:var(--mf-accent)}
+#mf-product-preview[data-design=signal] .mf-sidebar{width:60px;padding:18px 8px;align-items:center}
+#mf-product-preview[data-design=signal] .mf-sidebar button{padding:10px}
+#mf-product-preview[data-design=signal] .mf-sidebar button span,#mf-product-preview[data-design=signal] .mf-sidebar small,#mf-product-preview[data-design=signal] .mf-sidebar-label{display:none}
+#mf-product-preview[data-design=signal] h2{font:600 27px/1.1 Consolas,monospace;text-transform:uppercase;letter-spacing:-1px}
+#mf-product-preview[data-design=signal] .mf-subtitle,#mf-product-preview[data-design=signal] .mf-group-head,#mf-product-preview[data-design=signal] .mf-job-status,#mf-product-preview[data-design=signal] .mf-meta,#mf-product-preview[data-design=signal] .mf-destination{font-family:Consolas,monospace}
+#mf-product-preview[data-design=signal] .mf-title-row{border-bottom:1px solid var(--mf-line);padding-bottom:18px;margin-bottom:18px}
+#mf-product-preview[data-design=signal] .mf-entry{border:0;padding:0;background:transparent;gap:0;margin-bottom:24px}
+#mf-product-preview[data-design=signal] .mf-entry>label{background:var(--mf-panel);border:1px solid var(--mf-line);padding:9px 12px;min-height:37px}
+#mf-product-preview[data-design=signal] .mf-entry select{height:37px;border-left:0;border-right:0}
+#mf-product-preview[data-design=signal] .mf-entry .mf-primary{height:37px}
+#mf-product-preview[data-design=signal] .mf-file-mark{background:transparent;font:11px Consolas,monospace;height:25px;flex-basis:25px}
+#mf-product-preview[data-design=signal] .mf-job[data-state=downloading]{background:var(--mf-panel);border-left:3px solid var(--mf-accent);padding-left:13px;padding-right:13px;margin-top:10px}
+#mf-product-preview[data-design=signal] .mf-job[data-state=downloading] .mf-job-status{font-size:23px;line-height:1.1}
+#mf-product-preview[data-design=signal] .mf-job[data-state=downloading] .mf-file-mark{display:none}
+#mf-product-preview[data-design=signal] .mf-progress{height:5px;border-radius:0}
+#mf-product-preview[data-design=signal] .mf-inline-button{border-color:var(--mf-accent);font-family:Consolas,monospace;text-transform:uppercase}
+#mf-product-preview[data-design=signal] .mf-popup .mf-entry{gap:0}
+#mf-product-preview[data-design=signal] .mf-popup .mf-entry>label{margin-bottom:8px;padding:10px}
+#mf-product-preview[data-design=signal] .mf-popup .mf-entry select{border:1px solid var(--mf-line)}
+#mf-product-preview[data-design=archive] .mf-sidebar{display:none}
+#mf-product-preview[data-design=archive] .mf-app{border-radius:3px}
+#mf-product-preview[data-design=archive] .mf-app-top{margin:0 28px;padding:22px 0;border-bottom:2px solid var(--mf-ink)}
+#mf-product-preview[data-design=archive] .mf-brand{font:24px/1 Georgia,serif;letter-spacing:-1px}
+#mf-product-preview[data-design=archive] .mf-brand-symbol{background:transparent;color:var(--mf-accent);width:21px}
+#mf-product-preview[data-design=archive] .mf-main{padding:27px 28px 23px}
+#mf-product-preview[data-design=archive] h2{font:35px/1.1 Georgia,serif;letter-spacing:-1.5px}
+#mf-product-preview[data-design=archive] .mf-entry{background:var(--mf-panel);border-color:transparent;padding:13px}
+#mf-product-preview[data-design=archive] .mf-job-name{font:17px/1.25 Georgia,serif}
+#mf-product-preview[data-design=archive] .mf-file-mark{background:transparent;font:italic 18px/1 Georgia,serif;color:var(--mf-muted);flex-basis:25px;height:26px}
+#mf-product-preview[data-design=archive] .mf-group-head{font-size:11px;letter-spacing:1.4px;border-bottom:1px solid var(--mf-ink)}
+#mf-product-preview[data-design=archive] .mf-actions{margin-top:8px}
+#mf-product-preview[data-design=archive] .mf-actions button:first-child{background:transparent;color:var(--mf-accent);padding-left:0}
+#mf-product-preview[data-design=archive] .mf-progress{height:2px}
+#mf-product-preview[data-design=archive] .mf-inline-button{background:transparent;color:var(--mf-accent);border-color:var(--mf-accent)}
+#mf-product-preview[data-design=archive] .mf-popup .mf-app-top{margin:0 18px;padding:20px 0}
+#mf-product-preview[data-design=archive] .mf-popup .mf-main{padding:16px 18px}
+#mf-product-preview[data-design=archive] .mf-popup h2{font-size:28px}
+#mf-product-preview[data-design=archive] .mf-popup .mf-job-name{font-size:16px}
+@media(max-width:800px){#mf-product-preview .mf-sidebar{width:130px}#mf-product-preview .mf-main{padding:22px 20px}#mf-product-preview .mf-popups{grid-template-columns:minmax(290px,408px) minmax(220px,1fr);gap:18px}}
+@media(max-width:640px){#mf-product-preview .mf-sidebar{display:none!important}#mf-product-preview .mf-app-top{padding:16px!important}#mf-product-preview .mf-main{padding:20px 16px!important}#mf-product-preview .mf-title-row{flex-wrap:wrap;gap:12px}#mf-product-preview .mf-popups{grid-template-columns:1fr;gap:20px}#mf-product-preview .mf-popup{margin:0 auto}#mf-product-preview .mf-inline-specimen{max-width:408px;width:100%;margin:0 auto}#mf-product-preview .mf-entry{flex-wrap:wrap}#mf-product-preview .mf-entry>label{flex-basis:100%;padding:7px}#mf-product-preview .mf-entry select{flex:1;max-width:none}#mf-product-preview .mf-entry .mf-primary{flex:1}#mf-product-preview .mf-job-line{flex-wrap:wrap;gap:5px}#mf-product-preview .mf-job-status{font-size:11px}#mf-product-preview[data-design=archive] .mf-app-top{margin:0 16px}#mf-product-preview .mf-connected{font-size:11px}#mf-design-board .mf-view-label{width:100%;justify-content:space-between}#mf-design-board .mf-demo-footer{align-items:flex-start}#mf-product-preview[data-design=signal] .mf-entry>label{margin-bottom:8px}#mf-product-preview[data-design=signal] .mf-entry select{border:1px solid var(--mf-line)}}
+@media(pointer:coarse){#mf-design-board button{min-height:44px}#mf-product-preview input,#mf-product-preview select{font-size:16px!important}#mf-product-preview .mf-inline-button{height:44px}}
+</style>
+<script>
+(() => {
+  const root = document.getElementById('mf-design-board');
+  const preview = document.getElementById('mf-product-preview');
+  const descriptions = { slate: 'Quiet precision · cool graphite · compact workspace', canvas: 'Everyday clarity · soft white · generous spacing', signal: 'Transfer console · ink and acid · strong information hierarchy', archive: 'Personal collection · warm paper · editorial typography' };
+  const initial = [
+    { id:1, title:'Enterprise-D bridge recreated in Blender', source:'Reddit', state:'downloading', detail:'Up to 1080p · 5.5 of 11.5 MB', percent:48 },
+    { id:2, title:'Computer, lights on please', source:'X', state:'merging', detail:'Up to 1080p · 21.5 MB' },
+    { id:3, title:'A small world, built from scratch', source:'X', state:'failed', detail:'Up to 720p', error:'This video needs access that the helper does not have.' },
+    { id:4, title:'A research facility built by Astra', source:'Reddit', state:'completed', detail:'1080p · 23.0 MB · Today' },
+    { id:5, title:'Rain after midnight in Seoul', source:'X', state:'completed', detail:'720p · 8.2 MB · Yesterday' }
+  ];
+  const state = { direction:'slate', surface:'downloads', density:0, settings:false };
+  const saved = window.openai?.widgetState?.modelContent;
+  if (saved && descriptions[saved.direction]) state.direction = saved.direction;
+  if (saved && ['downloads','popup'].includes(saved.surface)) state.surface = saved.surface;
+  const restoreDensity = value => {if (Number.isFinite(value)) state.density = Math.max(-5,Math.min(8,value));};
+  restoreDensity(window.openai?.widgetState?.privateContent?.density);
+  let jobs = initial.map(j => ({...j}));
+  const icon = name => `<i data-lucide="${name}" class="mf-icon" aria-hidden="true"></i>`;
+  const action = (label, value, id) => `<button type="button" class="cursor-interaction" data-job-action="${value}" data-job-id="${id}">${label}</button>`;
+  const primary = (text, intent) => `<button type="button" class="mf-primary cursor-interaction" data-intent="${intent}">${icon('arrow-down-to-line')}${text}</button>`;
+  const brand = () => `<div class="mf-brand"><span class="mf-brand-symbol">${icon('arrow-down-to-line')}</span>MediaFetch</div>`;
+  const connection = () => '<span class="mf-connected">Local helper connected</span>';
+  const count = () => jobs.filter(j => ['downloading','merging','queued'].includes(j.state)).length;
+  function entry() {
+    return `<div class="mf-entry"><label>${icon('link')}<input aria-label="Post link" placeholder="Paste a Reddit or X post link" autocomplete="off"></label><select aria-label="Video quality"><option>Up to 1080p</option><option>Up to 720p</option><option>Best available</option></select>${primary('Download','download')}</div>`;
+  }
+  function row(job, index) {
+    const active = ['downloading','merging','queued'].includes(job.state);
+    const complete = job.state === 'completed';
+    const status = job.state === 'downloading' ? `${job.percent}%` : job.state.charAt(0).toUpperCase()+job.state.slice(1);
+    let buttons = complete ? action('Remove from list','forget',job.id) : active ? action('Stop','stop',job.id)+action('Stop and delete','delete',job.id) : job.state === 'stopped' ? action('Continue','resume',job.id)+action('Retry','retry',job.id)+action('Delete partial files','delete',job.id) : action('Retry','retry',job.id)+action('Remove from list','forget',job.id);
+    const mark = state.direction === 'archive' || state.direction === 'signal' ? String(index+1).padStart(2,'0') : icon(complete ? 'file-video' : active ? 'arrow-down' : 'circle-alert');
+    return `<article class="mf-job" data-state="${job.state}"><span class="mf-file-mark ${active?'is-active':''}">${mark}</span><div class="mf-job-body"><div class="mf-job-line"><h3 class="mf-job-name">${job.title}</h3><span class="mf-job-status ${active?'status-active':complete?'status-complete':job.state==='failed'?'status-failed':''}">${complete?icon('check'):''}${status}</span></div><div class="mf-meta"><span class="mf-source">${job.source}</span><span>·</span><span>${job.detail}</span></div>${job.state==='downloading'?`<div class="mf-progress" role="progressbar" aria-label="Download progress" aria-valuenow="${job.percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${job.percent}%"></span></div>`:''}${job.state==='failed'?`<p class="mf-error">${job.error}</p>`:''}<div class="mf-actions">${buttons}</div></div></article>`;
+  }
+  function groups(compact=false) {
+    if (!jobs.length) return '<div class="mf-empty">Your list is clear. Saved videos stay on your computer.</div>';
+    const categories = compact ? [ { name:'Recent downloads', match:() => true } ] : [
+      {name:'In progress',match:j=>['downloading','merging','queued'].includes(j.state)},
+      {name:'Needs attention',match:j=>['failed','stopped','cancelled'].includes(j.state)},
+      {name:state.direction==='archive'?'Saved to your collection':'Finished',match:j=>j.state==='completed'}
+    ];
+    return categories.map(group => {
+      const subset = jobs.filter(group.match).slice(0,compact?2:99);
+      return subset.length ? `<div class="mf-group-head"><span>${group.name}</span><span>${subset.length}</span></div>${subset.map(j=>row(j,jobs.indexOf(j))).join('')}` : '';
+    }).join('');
+  }
+  function settings() {
+    return state.settings ? `<section class="mf-settings"><div class="mf-settings-head">Preferences<button type="button" class="cursor-interaction" data-intent="settings">Close</button></div><label>Default quality<select aria-label="Default quality"><option>Up to 1080p</option><option>Up to 720p</option><option>Best available</option></select></label><label>Show buttons on Reddit<input type="checkbox" checked></label><label>Show buttons on X<input type="checkbox" checked></label><p class="mf-subtitle">Download folder: Downloads / VideoDownload</p></section>` : '';
+  }
+  function footer() { return `<div class="mf-destination"><span>${icon('folder')}Downloads / VideoDownload</span><span>Saved files stay on your computer</span></div>`; }
+  function desktop() {
+    const title = state.direction==='signal'?'Transfers':state.direction==='archive'?'Your collection':'Downloads';
+    const clearDisabled = !jobs.some(j=>['failed','completed','cancelled'].includes(j.state));
+    return `<section class="mf-app"><div class="mf-app-top">${brand()}${connection()}</div><div class="mf-layout"><aside class="mf-sidebar"><div class="mf-sidebar-label">WORKSPACE</div><button type="button" class="mf-nav-current cursor-interaction" data-intent="downloads" aria-label="Downloads">${icon('download')}<span>Downloads</span></button><button type="button" class="cursor-interaction" data-intent="settings" aria-label="Settings">${icon('settings-2')}<span>Settings</span></button><small>MediaFetch 0.1.1<br>On your computer.</small></aside><main class="mf-main"><div class="mf-title-row"><div><h2>${title}</h2><p class="mf-subtitle">${count()} active · ${jobs.filter(j=>j.state==='failed').length} needs attention</p></div><div class="mf-toolbar">${['canvas','archive'].includes(state.direction)?`<button type="button" class="cursor-interaction" data-intent="settings">${icon('settings-2')}Settings</button>`:''}<button type="button" class="cursor-interaction" data-intent="clear" ${clearDisabled?'disabled':''}>${icon('list-x')}Remove all</button></div></div>${settings()}${entry()}${groups()}${footer()}</main></div></section>`;
+  }
+  function popup() {
+    return `<div class="mf-popups"><section class="mf-popup" aria-label="Toolbar popup"><div class="mf-app-top">${brand()}<button type="button" class="cursor-interaction" data-intent="settings" aria-label="Settings">${icon('settings-2')}</button></div><div class="mf-main"><div class="mf-title-row"><h2>${state.direction==='archive'?'Keep this one.':state.direction==='signal'?'Fetch a video':'Save a video'}</h2></div>${settings()}${entry()}${groups(true)}</div><div class="mf-popup-foot"><span>${jobs.filter(j=>j.state==='failed').length} needs attention</span><button type="button" class="cursor-interaction" data-intent="downloads">View all downloads →</button></div></section><section class="mf-inline-specimen" aria-label="In-page button concept"><div class="mf-spec-label">In-page control</div><div class="mf-post-header"><div class="mf-avatar">M1</div><div>Video post<small>@example · 2h</small></div></div><p class="mf-post-caption">Computer, lights on please.</p><div class="mf-video-surface" aria-label="Video placeholder">${icon('play')}</div><div class="mf-social-actions">${icon('message-circle')}${icon('repeat-2')}${icon('heart')}${icon('bookmark')}${icon('share')}</div><button type="button" class="mf-inline-button cursor-interaction" data-intent="inline">${icon('arrow-down-to-line')}Save video</button><p class="mf-inline-note">A compact control below the post actions.</p></section></div>`;
+  }
+  function persist() {
+    window.openai?.setWidgetState?.({modelContent:{direction:state.direction,surface:state.surface},privateContent:{density:state.density}})?.catch(()=>{});
+  }
+  function render() {
+    preview.dataset.design=state.direction;
+    preview.style.setProperty('--mf-density',state.density+'px');
+    preview.innerHTML=state.surface==='popup'?popup():desktop();
+    root.querySelectorAll('[data-direction]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.direction===state.direction)));
+    root.querySelector('[aria-label="Preview surface"]').value=state.surface;
+    root.querySelector('#mf-direction-description').textContent=descriptions[state.direction];
+    if(globalThis.lucide) lucide.createIcons({attrs:{width:16,height:16}});
+  }
+  const feedback = text => {root.querySelector('#mf-demo-status').textContent=text;};
+  root.addEventListener('click',event=>{
+    const button=event.target.closest('button'); if(!button||!root.contains(button))return;
+    if(button.dataset.direction){state.direction=button.dataset.direction;state.settings=false;render();persist();return;}
+    if(button.classList.contains('mf-reset')){jobs=initial.map(j=>({...j}));state.settings=false;render();feedback('Sample jobs reset · no real files are affected');return;}
+    const intent=button.dataset.intent;
+    if(intent==='clear'){jobs=jobs.filter(j=>!['completed','failed','cancelled'].includes(j.state));render();feedback('Finished entries removed. Active downloads and saved videos are kept.');return;}
+    if(intent==='settings'){state.settings=!state.settings;render();return;}
+    if(intent==='downloads'){state.surface='downloads';state.settings=false;render();persist();return;}
+    if(intent==='inline'){button.innerHTML=icon('check')+' Added to downloads';if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});feedback('Inline button feedback · preview only');return;}
+    if(intent==='download'){
+      const input=button.closest('.mf-entry').querySelector('input');
+      if(!input.value.trim()){input.focus();feedback('Paste a post link to try the mock interaction.');return;}
+      const nextId=Math.max(0,...jobs.map(j=>j.id))+1;
+      jobs.unshift({id:nextId,title:'New video from your link',source:'X',state:'queued',detail:'Up to 1080p · Waiting for an available slot'});
+      render();feedback('Sample video queued · no network request was made');return;
+    }
+    const job=jobs.find(j=>j.id===Number(button.dataset.jobId));if(!job)return;
+    const operation=button.dataset.jobAction;
+    if(operation==='forget'){jobs=jobs.filter(j=>j!==job);feedback('Entry removed. The saved video is kept.');}
+    if(operation==='stop'){job.state='stopped';feedback('Stopped. Partial files are kept for Continue.');}
+    if(operation==='delete'){job.state='cancelled';job.detail='Partial files removed';feedback('Cancelled. Only this sample job’s partial files were removed.');}
+    if(operation==='resume'||operation==='retry'){job.state='queued';job.detail='Waiting for an available slot';feedback(operation==='resume'?'Continue queued with retained data.':'Fresh attempt queued.');}
+    render();
+  });
+  root.querySelector('[aria-label="Preview surface"]').addEventListener('change',event=>{state.surface=event.target.value;state.settings=false;render();persist();});
+  window.addEventListener('openai:set_globals',event=>{
+    const snapshot=event.detail?.globals?.widgetState;
+    if(!snapshot)return;
+    if(descriptions[snapshot.modelContent?.direction])state.direction=snapshot.modelContent.direction;
+    if(['downloads','popup'].includes(snapshot.modelContent?.surface))state.surface=snapshot.modelContent.surface;
+    restoreDensity(snapshot.privateContent?.density);
+    render();
+  });
+  render();
+  if(globalThis.Tweak){const tweak=new Tweak({container:preview,onChange:()=>{render();persist();}});tweak.addSlider(state,'density',{label:'Row breathing room',min:-5,max:8,step:1,unit:'px',reference:'--mf-density'});}
+})();
+</script>
