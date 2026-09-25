@@ -166,6 +166,16 @@ Validation: exact URL and CDN boundaries, single-video/no-live policy, settings 
 
 Exit: the complete single-video slice is built and verified, or the exact provider/environment blocker and remaining acceptance are recorded. No universal YouTube compatibility claim.
 
+### Y1.1 — YouTube title filenames and current desktop Shorts (authorized 2026-09-25)
+
+Status: source/build and automated/live isolated acceptance passed on `main`. Helper installation and normal-Chrome acceptance remain pending; exact evidence is in DOCUMENTATION.md.
+
+Save new YouTube downloads using the extracted video title plus the media extension. Remove the provider/ID prefix for YouTube only. Normalize characters Windows cannot store, guard reserved device names, and bound long names without splitting Unicode characters. Keep collision-safe publication (`Title (1).mp4`) and all existing saved files. Do not rename previous downloads.
+
+Support the current desktop Shorts renderer, which exposes its identity through the visible player's permalink instead of reel `is-active`/`video-id` attributes. Place a compact control below the player's native top controls, without resizing the player or its action bar. Confirm the permalink matches the current URL; handle ads, hidden/stale players, recycled nodes and settings changes. Keep older recognized layouts and existing watch-page behavior.
+
+Validation: Windows filename/device-name/collision tests; sanitized old/current Shorts and SPA identity fixtures; existing content regressions; typecheck/build and native tests. Use the owner-selected `GuseDyzBWWQ` (Purr) Short and `MkycQONC3SE` (Tail Count Nine) watch video for isolated real page/download checks, exact filenames, streams, full decode and Chrome playback. Install only after passing checks and the inactive-helper guard; preserve the journal and active Chrome. Record any remaining normal-Chrome acceptance separately.
+
 ## 7. Required acceptance evidence
 
 | Scenario | Expected evidence |

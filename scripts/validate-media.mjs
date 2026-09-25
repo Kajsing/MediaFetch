@@ -8,7 +8,9 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
 const youtube = process.argv.includes('--youtube');
-const initial = JSON.parse(await readFile(path.join(root, youtube ? 'artifacts/youtube-live.json' : 'artifacts/live-smoke.json'), 'utf8')).results;
+const input = process.argv.indexOf('--evidence');
+const output = process.argv.indexOf('--output');
+const initial = JSON.parse(await readFile(input === -1 ? path.join(root, youtube ? 'artifacts/youtube-live.json' : 'artifacts/live-smoke.json') : process.argv[input + 1], 'utf8')).results;
 const recovery = youtube ? [] : JSON.parse(await readFile(path.join(root, 'artifacts/recovery-smoke.json'), 'utf8')).jobs;
 const videos = [...new Set([...initial, ...recovery].map(item => item.path).filter(Boolean))];
 assert.ok(videos.length, 'Acceptance evidence must contain saved videos');
@@ -53,7 +55,8 @@ try {
       const source = audioContext.createMediaElementSource(video);
       const analyser = audioContext.createAnalyser();
       source.connect(analyser); analyser.connect(audioContext.destination);
-      video.currentTime = 8;
+      const startTime = Math.min(8, video.duration / 4);
+      video.currentTime = startTime;
       await video.play();
       const samples = new Float32Array(analyser.fftSize);
       let maximumRms = 0;
@@ -63,15 +66,15 @@ try {
         maximumRms = Math.max(maximumRms, Math.sqrt(samples.reduce((sum, value) => sum + value * value, 0) / samples.length));
       }
       video.pause();
-      const result = { duration: video.duration, currentTime: video.currentTime, width: video.videoWidth, height: video.videoHeight, audioRms: maximumRms, decodedFrames: video.getVideoPlaybackQuality().totalVideoFrames, mediaError: video.error?.code ?? null };
+      const result = { duration: video.duration, startTime, currentTime: video.currentTime, width: video.videoWidth, height: video.videoHeight, audioRms: maximumRms, decodedFrames: video.getVideoPlaybackQuality().totalVideoFrames, mediaError: video.error?.code ?? null };
       source.disconnect(); analyser.disconnect(); await audioContext.close();
       return result;
     }, index);
-    assert.ok(playback.currentTime > 9 && playback.decodedFrames > 0 && playback.audioRms > 0.0001 && !playback.mediaError, 'Chrome must decode video and non-silent audio');
+    assert.ok(playback.currentTime > playback.startTime && playback.decodedFrames > 0 && playback.audioRms > 0.0001 && !playback.mediaError, 'Chrome must decode video and non-silent audio');
     evidence[index].chromePlayback = playback;
     if (youtube) await page.screenshot({ path: path.join(root, `artifacts/youtube-playback-${index}.png`) });
     await page.evaluate(() => { document.querySelector('video').remove(); document.body.append(document.createElement('video')); });
   }
 } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
-await writeFile(path.join(root, youtube ? 'artifacts/youtube-media-validation.json' : 'artifacts/media-validation.json'), JSON.stringify(evidence, null, 2));
+await writeFile(output === -1 ? path.join(root, youtube ? 'artifacts/youtube-media-validation.json' : 'artifacts/media-validation.json') : process.argv[output + 1], JSON.stringify(evidence, null, 2));
 console.log(JSON.stringify(evidence, null, 2));

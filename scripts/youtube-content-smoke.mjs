@@ -70,6 +70,44 @@ try {
   });
   await count(1); assert.equal((await selected('#short-next')).url, 'https://www.youtube.com/watch?v=abcdefghijk');
   checks.push('Only the matching active Short receives a control when the player is recycled');
+  // Sanitized structure observed on desktop Shorts, September 2026. The shared
+  // player owns the permalink; reel renderers have no active/video ID attributes.
+  await page.evaluate(() => {
+    document.querySelectorAll('ytd-reel-video-renderer').forEach(e => e.remove());
+    history.pushState({}, '', '/shorts/GuseDyzBWWQ');
+    document.body.insertAdjacentHTML('beforeend', '<ytd-shorts><ytd-reel-video-renderer id="reel-first"><div id="player-container"><ytd-player context="WEB_PLAYER_CONTEXT_CONFIG_ID_KEVLAR_SHORTS" aria-hidden="false"><div id="shorts-player"><video id="modern-current"></video><a id="player-permalink" href="/shorts/GuseDyzBWWQ">Purr</a><a href=""></a></div></ytd-player><div class="player-controls" style="position:absolute;top:20px;left:20px"><ytd-shorts-player-controls><div id="left-controls">Play</div><div id="right-controls">Menu</div></ytd-shorts-player-controls></div></div></ytd-reel-video-renderer><ytd-reel-video-renderer id="reel-next"><a href="/shorts/abcdefghijk">Next Short</a></ytd-reel-video-renderer></ytd-shorts>');
+    window.dispatchEvent(new Event('yt-navigate-finish'));
+  });
+  await count(1);
+  assert.equal((await selected('#modern-current')).url, 'https://www.youtube.com/watch?v=GuseDyzBWWQ');
+  assert.equal(await selected('#reel-next'), null);
+  assert.equal(await page.locator('.mediafetch-control').getAttribute('data-placement'), 'shorts-overlay');
+  await page.evaluate(() => document.querySelector('#player-permalink').setAttribute('href', ''));
+  await count(0); assert.equal(await selected('#modern-current'), null);
+  await page.evaluate(() => document.querySelector('#player-permalink').setAttribute('href', '/shorts/GuseDyzBWWQ'));
+  await count(1);
+  await page.evaluate(() => document.querySelector('ytd-player').setAttribute('aria-hidden', 'true'));
+  await count(0); assert.equal(await selected('#modern-current'), null);
+  await page.evaluate(() => document.querySelector('ytd-player').setAttribute('aria-hidden', 'false'));
+  await count(1);
+  await page.evaluate(() => document.querySelector('#shorts-player').classList.add('ad-showing'));
+  await count(0); assert.equal(await selected('#modern-current'), null);
+  await page.evaluate(() => document.querySelector('#shorts-player').classList.remove('ad-showing'));
+  await count(1);
+  await page.evaluate(() => {
+    history.pushState({}, '', '/shorts/abcdefghijk');
+    window.dispatchEvent(new Event('yt-navigate-finish'));
+  });
+  await count(0); assert.equal(await selected('#modern-current'), null);
+  await page.evaluate(() => {
+    document.querySelector('#reel-next').append(document.querySelector('#player-container'));
+    document.querySelector('#player-permalink').setAttribute('href', '/shorts/abcdefghijk');
+  });
+  await count(1);
+  assert.equal(await page.locator('.mediafetch-control').evaluate(e => e.closest('ytd-reel-video-renderer').id), 'reel-next');
+  await page.locator('.mediafetch-control').click();
+  await expect.poll(() => worker.evaluate(() => globalThis.observedRequests.at(-1)?.url)).toBe('https://www.youtube.com/watch?v=abcdefghijk');
+  checks.push('Modern Shorts confirm the owned player permalink, reject blank links, hidden players and ads, and follow a moved player only after its URL matches');
   const options = await context.newPage();
   await options.goto(`chrome-extension://${worker.url().split('/')[2]}/options.html`);
   await options.evaluate(() => chrome.runtime.sendMessage({type:'saveSettings',settings:{quality:'1080',inlineReddit:true,inlineX:true,inlineYouTube:false}}));
@@ -99,6 +137,20 @@ try {
     await page.locator('.mediafetch-control').click();
     await expect.poll(() => worker.evaluate(() => globalThis.observedRequests.at(-1)?.url)).toBe('https://www.youtube.com/watch?v=MkycQONC3SE');
     checks.push('The owner-selected live YouTube page renders one compact button and sends its canonical identity (isolated helper unavailable)');
+    await page.goto('https://www.youtube.com/shorts/GuseDyzBWWQ', {waitUntil:'domcontentloaded', timeout:45000});
+    await expect(page.locator('.mediafetch-control')).toHaveCount(1, {timeout:30000});
+    await expect(page.locator('.mediafetch-control')).toBeVisible();
+    const shortLayout = await page.locator('.mediafetch-control').evaluate(e => {
+      const box = e.getBoundingClientRect();
+      const controls = e.previousElementSibling.querySelector('#left-controls').getBoundingClientRect();
+      const player = e.closest('ytd-reel-video-renderer').querySelector('video').getBoundingClientRect();
+      return {width:box.width,height:box.height,belowControls:box.top >= controls.bottom,insidePlayer:box.left >= player.left && box.right <= player.right && box.bottom <= player.bottom};
+    });
+    assert.ok(shortLayout.width < 200 && shortLayout.height <= 34 && shortLayout.belowControls && shortLayout.insidePlayer, JSON.stringify(shortLayout));
+    await page.screenshot({path:path.join(root,'artifacts/youtube-shorts-control.png')});
+    await page.locator('.mediafetch-control').click();
+    await expect.poll(() => worker.evaluate(() => globalThis.observedRequests.at(-1)?.url)).toBe('https://www.youtube.com/watch?v=GuseDyzBWWQ');
+    checks.push('The live Purr Short renders one compact button below playback controls; clicking sends exactly GuseDyzBWWQ');
   }
   await writeFile(path.join(root,'artifacts/youtube-content.json'), JSON.stringify({browser:context.browser()?.version(), live:process.argv.includes('--live'), checks},null,2));
   console.log(JSON.stringify({checks},null,2));

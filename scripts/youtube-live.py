@@ -77,6 +77,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--run", action="store_true", required=True)
     parser.add_argument("--recovery", action="store_true")
+    parser.add_argument("--evidence", type=Path, default=ROOT / "artifacts/youtube-live.json")
+    parser.add_argument("--expected-title")
     parser.add_argument("url")
     args = parser.parse_args()
     (ROOT / ".local").mkdir(exist_ok=True)
@@ -97,6 +99,8 @@ def main():
         evidence["results"].append(job)
         assert job["state"] == "completed", job.get("error", job["state"])
         assert Path(job["path"]).is_file()
+        if args.expected_title:
+            assert Path(job["path"]).stem == args.expected_title, job["path"]
         assert not job["hasPartials"] and not job.get("errorCode"), job
         evidence["checks"].append("Framed native helper downloaded the owner-selected single video")
         if args.recovery:
@@ -126,7 +130,7 @@ def main():
     finally:
         host.close()
         (ROOT / "artifacts").mkdir(exist_ok=True)
-        (ROOT / "artifacts/youtube-live.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+        args.evidence.write_text(json.dumps(evidence, indent=2), encoding="utf-8")
         print(json.dumps(evidence, indent=2), flush=True)
 
 

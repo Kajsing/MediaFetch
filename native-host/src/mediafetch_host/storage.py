@@ -124,6 +124,16 @@ def safe_filename(title: str, provider: str, content_id: str, suffix: str) -> st
     if suffix not in (".mp4", ".webm", ".mkv", ".mov", ".m4v"):
         raise MediaFetchError("INVALID_OUTPUT", "The extractor produced an unsupported file type.")
     clean = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", title)
+    if provider == "youtube":
+        # Windows counts filename limits in UTF-16 units. Leave room for the
+        # extension and publication's collision suffix without splitting emoji.
+        clean = re.sub(r"[\ud800-\udfff]", "_", clean)
+        clean = re.sub(r"\s+", " ", clean).strip(" .")
+        clean = clean.encode("utf-16-le", errors="replace")[:360].decode("utf-16-le", errors="ignore").rstrip(" .") or "video"
+        # Device names remain reserved even when followed by another extension.
+        if re.fullmatch(r"CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[1-9¹²³]|LPT[1-9¹²³]", clean.split(".", 1)[0].rstrip(), re.IGNORECASE):
+            clean = "_" + clean
+        return clean + suffix
     clean = re.sub(r"\s+", " ", clean).replace("..", "_").strip(" .")[:95]
     return f"{provider}_{content_id}_{clean or 'video'}{suffix}"
 

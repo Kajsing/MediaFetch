@@ -4,7 +4,7 @@
 
 MediaFetch pairs a Chrome extension with a local Windows helper. Pick a video, choose its quality, and manage the download from a persistent list. Videos are saved to `Downloads\VideoDownload` by default.
 
-**Version 0.2.0 · Windows 11 · Chrome Manifest V3 · Unpacked installation**
+**Version 0.2.1 · Windows 11 · Chrome Manifest V3 · Unpacked installation**
 
 [Install](#install) · [Download controls](#download-controls) · [Update](#update-and-uninstall) · [Troubleshooting](#troubleshooting)
 
@@ -12,6 +12,7 @@ MediaFetch pairs a Chrome extension with a local Windows helper. Pick a video, c
 
 - Adds compact **Save video** buttons to supported pages, with a toolbar popup, pasted links and a context-menu action as other entry points.
 - Downloads video with its available audio and merges separate streams locally.
+- Saves YouTube videos and Shorts using their titles, such as `Purr.mp4`. Windows-incompatible names are normalized; duplicate names get a numbered suffix, preserving existing files.
 - Offers **Up to 720p**, **Up to 1080p** (the default), and **Best available**. Capped choices never silently exceed their limit.
 - Runs up to two downloads at once and queues the rest. Closing the popup does not stop work.
 - Keeps unfinished downloads available for **Continue** or **Retry** after a browser/helper restart.
@@ -25,7 +26,7 @@ MediaFetch pairs a Chrome extension with a local Windows helper. Pick a video, c
 | X / Twitter | Public video posts, recognized detail/feed controls and quoted-video targeting. | Recognized GIF-only players have no inline video button. Multiple videos may require an explicit selection. |
 | YouTube | Public single videos through watch, youtu.be and Shorts links; inline controls on recognized watch/active-Short layouts. | No playlist/channel downloads, live or still-processing streams, authenticated/age-restricted videos, or DRM. Playlist/time/tracking context is discarded. |
 
-If a page has no button, open the video's permalink or paste its link into MediaFetch. Mobile YouTube layouts and broader live Shorts layouts have not been verified. See [acceptance evidence and coverage limits](DOCUMENTATION.md).
+If a page has no button, open the video's permalink or paste its link into MediaFetch. The current desktop Shorts layout is verified; mobile YouTube and other layout variants have no promised inline placement. See [acceptance evidence and coverage limits](DOCUMENTATION.md).
 
 ## Download controls
 
@@ -77,7 +78,7 @@ The installer creates a dedicated Python environment, installs pinned yt-dlp, EJ
 
 ## Update and uninstall
 
-**Upgrading from 0.1.x to 0.2.0 requires updating the helper as well as the extension.** YouTube adds a local JavaScript runtime and exact YouTube page permissions. Older helpers continue to serve Reddit/X and display an update message for YouTube.
+**Update both the helper and the extension for 0.2.1.** The helper change supplies title-based YouTube filenames; the extension change supplies current desktop Shorts controls. Existing downloaded files keep their names. Upgrading from 0.1.x also adds the local YouTube JavaScript runtime and exact YouTube page permissions. Older helpers continue to serve Reddit/X and display an update message for YouTube.
 
 Let active downloads finish, or stop them to retain partials. Disable MediaFetch in `chrome://extensions` so the helper releases its journal. From your checkout:
 
@@ -120,7 +121,7 @@ Remove the extension separately in `chrome://extensions`. Uninstall preserves vi
 
 ## Development and validation
 
-Version 0.2.0 passed **18 extension tests and 40 Windows native tests**, plus isolated browser checks, real provider downloads and video/audio validation. The owner confirmed the YouTube button and download with sound in normal Chrome. These are recorded results, not a guarantee for every provider layout or format; see [full evidence](DOCUMENTATION.md).
+Version 0.2.1 passed **19 extension tests and 42 Windows native tests**, plus isolated content checks, live watch/Shorts placement and click identity, real downloads with title-based filenames, and full video/audio validation. The owner previously confirmed 0.2.0's watch-page workflow in normal Chrome; installation and normal-Chrome status for this update are recorded separately in [full evidence](DOCUMENTATION.md). These results do not guarantee every provider layout or format.
 
 From a checkout with its JavaScript dependencies installed:
 
@@ -169,7 +170,7 @@ pnpm exec node scripts/validate-media.mjs --youtube
 pnpm exec node scripts/youtube-content-smoke.mjs --live
 ```
 
-The owner selected this video for testing. Use another public single-video URL when needed. The content smoke's live mode checks page placement and click identity using an isolated extension; it does not connect to the installed helper. Native acceptance separately verifies download, byte reuse, restart and deletion. Shorts fixtures do not prove every live Shorts layout.
+The owner selected this video for testing. The content smoke's live mode checks both this watch page and the selected [Purr Short](https://www.youtube.com/shorts/GuseDyzBWWQ), using an isolated extension that cannot connect to the installed helper. Native acceptance separately verifies download, byte reuse, restart and deletion. Use `--evidence artifacts/youtube-shorts-live.json --expected-title Purr` with `youtube-live.py` and the Shorts URL to retain separate filename evidence; pass the same `--evidence` path to `validate-media.mjs --youtube`. Current live desktop coverage and sanitized SPA fixtures do not prove every Shorts layout.
 
 </details>
 

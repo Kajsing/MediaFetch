@@ -8,6 +8,10 @@ let settings: Settings = DEFAULT_SETTINGS;
 let contextTarget: Element | null = null;
 let contextTime = 0;
 const hosts = new Map<Element, { host: HTMLElement; identity: string }>();
+function placeControl(host: HTMLElement, anchor: Element) {
+  host.dataset.placement = anchor.matches('ytd-shorts-player-controls') ? 'shorts-overlay' : 'inline';
+  if (anchor.nextElementSibling !== host) anchor.after(host);
+}
 function candidate(target: Element): Candidate | null {
   const provider = providerFor(location.href);
   return provider === 'reddit' ? redditCandidate(target, location.href) : provider === 'x' ? xCandidate(target, location.href) : provider === 'youtube' ? youtubeCandidate(target, location.href) : null;
@@ -51,7 +55,7 @@ function scan(scope: ParentNode) {
     if (!found) continue;
     const existing = hosts.get(post);
     if (existing) {
-      if (anchor && anchor.nextElementSibling !== existing.host) anchor.after(existing.host);
+      if (anchor) placeControl(existing.host, anchor);
       continue;
     }
     if (!post.querySelector('video, shreddit-player, [data-testid="videoPlayer"], [data-testid="videoComponent"], [data-click-id="media"]') && post.getAttribute('post-type') !== 'video') continue;
@@ -62,6 +66,7 @@ function scan(scope: ParentNode) {
     style.textContent = `:host{display:inline-flex;flex:0 0 auto;align-self:flex-start;align-items:center;width:max-content;max-width:100%;height:auto;margin:${provider === 'x' ? '8px 0 4px' : '6px 10px'}}button{box-sizing:border-box;height:32px;white-space:nowrap;line-height:18px;font:500 12px system-ui;color:#c4bdff;background:#2b2840;border:1px solid #55506d;border-radius:7px;padding:6px 11px;cursor:pointer}button:hover{background:#393451}button:focus-visible{outline:2px solid #aba3ff;outline-offset:2px}button:disabled{opacity:.7;cursor:wait}`;
     const button = document.createElement('button'); button.type = 'button';
     button.textContent = '↓ Save video'; button.title = 'Download this video with MediaFetch';
+    style.textContent += ':host([data-placement="shorts-overlay"]){position:absolute;inset-block-start:72px;inset-inline-start:16px;margin:0;z-index:1;pointer-events:auto}';
     button.addEventListener('click', async event => {
       event.preventDefault(); event.stopPropagation();
       const current = candidate(post);
@@ -76,7 +81,7 @@ function scan(scope: ParentNode) {
       finally { button.disabled = false; }
     });
     shadow.append(style, button); hosts.set(post, { host, identity: found.url });
-    if (anchor) anchor.after(host);
+    if (anchor) placeControl(host, anchor);
     else post.append(host);
   }
 }
@@ -102,4 +107,4 @@ for (const event of ['yt-navigate-start', 'yt-navigate-finish', 'yt-page-data-up
     else scan(document);
   });
 }
-void refreshSettings().then(() => { scan(document); observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'permalink', 'data-permalink', 'post-type', 'aria-label', 'video-id', 'is-active', 'hidden', 'aria-hidden', 'class'] }); });
+void refreshSettings().then(() => { scan(document); observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href', 'permalink', 'data-permalink', 'post-type', 'aria-label', 'video-id', 'is-active', 'hidden', 'aria-hidden', 'class', 'context', 'id'] }); });

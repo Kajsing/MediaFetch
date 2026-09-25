@@ -72,6 +72,39 @@ class StorageTests(unittest.TestCase):
         finally:
             first.close()
 
+    def test_youtube_uses_the_title_and_preserves_duplicate_downloads(self):
+        for content_id, expected in (("GuseDyzBWWQ", "Purr.mp4"), ("abcdefghijk", "Purr (1).mp4")):
+            with staging(self.root, str(uuid.uuid4())) as folder:
+                source = folder / "media.mp4"
+                source.write_bytes(content_id.encode())
+                target = publish(source, self.root, safe_filename("Purr", "youtube", content_id, ".mp4"))
+                self.assertEqual(target.name, expected)
+        self.assertEqual((self.root / "Purr.mp4").read_bytes(), b"GuseDyzBWWQ")
+        self.assertEqual((self.root / "Purr (1).mp4").read_bytes(), b"abcdefghijk")
+        self.assertEqual(safe_filename("Tail Count Nine", "youtube", "MkycQONC3SE", ".webm"), "Tail Count Nine.webm")
+        self.assertEqual(safe_filename("Title", "x", "123", ".mp4"), "x_123_Title.mp4")
+
+    def test_youtube_titles_remain_valid_windows_files(self):
+        cases = {
+            "CON": "_CON.mp4", "nul.txt": "_nul.txt.mp4", "LPT¹": "_LPT¹.mp4",
+            "COM2.demo": "_COM2.demo.mp4", "conout$": "_conout$.mp4",
+            " . ": "video.mp4", "Nya… it's 🎬 time": "Nya… it's 🎬 time.mp4",
+            '../outside/CON: title?\\take*\x00': '_outside_CON_ title__take__.mp4',
+            "Wait... now. ": "Wait... now.mp4",
+        }
+        for title, expected in cases.items():
+            with self.subTest(title=title):
+                name = safe_filename(title, "youtube", "GuseDyzBWWQ", ".mp4")
+                self.assertEqual(name, expected)
+                target = self.root / name
+                target.write_bytes(b"safe")
+                self.assertEqual(target.parent, self.root)
+                self.assertEqual(target.read_bytes(), b"safe")
+        title = "🎬" * 100
+        name = safe_filename(title, "youtube", "GuseDyzBWWQ", ".mp4")
+        self.assertEqual(name, "🎬" * 90 + ".mp4")
+        (self.root / name).write_bytes(b"unicode")
+
     def test_junction_is_rejected_without_touching_target(self):
         import _winapi
         outside = self.root / 'unrelated'
